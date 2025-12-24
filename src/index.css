@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+html {
+  height: 100%;
+  line-height: 1.2;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+}
+
+/* Custom tailwind styles */
+@layer base {
+  .Container {
+    @apply mx-auto max-w-7xl px-4;
+  }
+
+  .small-scrollbar {
+    scrollbar-width: thin;
+  }
+
+  .small-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  .custom-scrollbar {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+}

@@ -29,3 +29,6 @@ coverage/
 dist/
 *storybook.log
 storybook-static
+
+
+explanation_docs/

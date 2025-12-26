@@ -49,8 +49,19 @@ export const RegisterFormSchema = z
   });
 
 export const LoginFormSchema = z.object({
-  email: z.string().nonempty('Email is required').email('Email is invalid'),
-  password: z.string().nonempty('Password is required').min(6, 'Password must be at least 6 characters')
+  mobileOrEmail: z
+    .string()
+    .nonempty('Mobile number or email is required')
+    .refine(
+      (value) => {
+        const isEmail = /\S+@\S+\.\S+/.test(value);
+        const isMobile = /^[0-9]{10,11}$/.test(value.replace(/\s/g, ''));
+        return isEmail || isMobile;
+      },
+      { message: 'Please enter a valid email or mobile number' }
+    ),
+  password: z.string().nonempty('Password is required').min(6, 'Password must be at least 6 characters'),
+  rememberMe: z.boolean().optional()
 });
 
 export type RegisterFormData = z.infer<typeof RegisterFormSchema>;

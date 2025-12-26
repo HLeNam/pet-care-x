@@ -35,7 +35,7 @@ const Register = () => {
 
             <div className='mt-auto text-center'>
               <img
-                src='/assets/images/pets.png'
+                src='/assets/images/three_dogs.png'
                 alt='Three white puppies'
                 className='mx-auto h-auto max-h-[300px] max-w-full object-contain'
                 onError={(e) => {

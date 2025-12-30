@@ -1,11 +1,14 @@
 import { ShoppingCart, User, Menu, X, UserCircle, Package, Calendar, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '~/contexts';
 import { useState } from 'react';
 
 const Header = () => {
   const { isAuthenticated } = useAppContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const location = useLocation();
+  const pathname = location.pathname;
 
   return (
     <header className='sticky top-0 z-50 bg-white shadow-sm'>
@@ -28,20 +31,20 @@ const Header = () => {
           {/* Desktop Navigation Menu */}
           <nav className='hidden items-center space-x-6 lg:flex xl:space-x-8'>
             <Link
-              to='/products'
-              className='font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500'
+              to='/'
+              className={`font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500 ${pathname === '/' ? 'text-orange-500' : ''}`}
             >
               Products
             </Link>
             <Link
               to='/booking'
-              className='font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500'
+              className={`font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500 ${pathname === '/booking' ? 'text-orange-500' : ''}`}
             >
               Book Appointment
             </Link>
             <Link
               to='/doctors'
-              className='font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500'
+              className={`font-medium text-gray-700 transition-colors duration-200 hover:text-orange-500 ${pathname === '/doctors' ? 'text-orange-500' : ''}`}
             >
               Doctor Schedule
             </Link>

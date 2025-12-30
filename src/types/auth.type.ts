@@ -25,16 +25,16 @@ export type RefreshTokenResponse = SuccessResponseApi<{
 export const RegisterFormSchema = z
   .object({
     name: z.string().nonempty('Name is required').min(2, 'Name must be at least 2 characters'),
-    mobileOrEmail: z
+    email: z.string().nonempty('Email is required').email('Please enter a valid email address'),
+    phoneNumber: z
       .string()
-      .nonempty('Mobile number or email is required')
+      .nonempty('Mobile number is required')
       .refine(
         (value) => {
-          const isEmail = /\S+@\S+\.\S+/.test(value);
           const isMobile = /^[0-9]{10,11}$/.test(value.replace(/\s/g, ''));
-          return isEmail || isMobile;
+          return isMobile;
         },
-        { message: 'Please enter a valid email or mobile number' }
+        { message: 'Please enter a valid mobile number' }
       ),
     password: z
       .string()

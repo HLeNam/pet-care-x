@@ -20,7 +20,8 @@ export const useRegisterForm = (): UseRegisterFormReturn => {
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
-    mobileOrEmail: '',
+    email: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: ''
   });
@@ -73,7 +74,8 @@ export const useRegisterForm = (): UseRegisterFormReturn => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          email: formData.mobileOrEmail,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
           password: formData.password
         })
       });

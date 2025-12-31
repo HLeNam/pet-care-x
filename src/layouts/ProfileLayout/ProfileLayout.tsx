@@ -1,3 +1,4 @@
+import { PawPrint } from 'lucide-react';
 import { useState, type JSX } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 
@@ -33,30 +34,7 @@ const ProfileLayout = () => {
       label: 'Pet Management',
       path: '/profile/pets',
       icon: (
-        <svg
-          className='h-5 w-5'
-          viewBox='0 0 512 512'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth={32}
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          xmlns='http://www.w3.org/2000/svg'
-        >
-          <ellipse cx='140' cy='150' rx='45' ry='60' />
-          <ellipse cx='230' cy='90' rx='45' ry='60' />
-          <ellipse cx='320' cy='90' rx='45' ry='60' />
-          <ellipse cx='410' cy='150' rx='45' ry='60' />
-
-          <path
-            d='
-                M120 300
-                C120 220, 390 220, 390 300
-                C390 400, 300 450, 256 450
-                C212 450, 120 400, 120 300Z
-            '
-          />
-        </svg>
+        <PawPrint className='h-5 w-5' />
       )
     },
     {
@@ -75,9 +53,9 @@ const ProfileLayout = () => {
       )
     },
     {
-      id: 'medical-history',
-      label: 'Medical History',
-      path: '/profile/medical-history',
+      id: 'appointments',
+      label: 'Appointments',
+      path: '/profile/appointments',
       icon: (
         <svg className='h-5 w-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
           <path
@@ -96,9 +74,8 @@ const ProfileLayout = () => {
   return (
     <div className='flex min-h-screen bg-gray-50'>
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen bg-white shadow-lg transition-all duration-300 ${
-          isSidebarOpen ? 'w-64' : 'w-16'
-        }`}
+        className={`fixed top-16 lg:top-20 left-0 z-40 bg-white shadow-lg transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'
+          } bottom-0 overflow-y-auto`}
       >
         <div className='flex h-16 items-center justify-between border-b px-4'>
           {isSidebarOpen && <h2 className='text-lg font-semibold text-gray-800'>Account</h2>}
@@ -126,9 +103,8 @@ const ProfileLayout = () => {
               <Link
                 key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${
-                  active ? 'bg-lime-50 text-lime-700' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${active ? 'bg-lime-50 text-lime-700' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
                 title={!isSidebarOpen ? item.label : undefined}
               >
                 <span className={active ? 'text-lime-600' : 'text-gray-500'}>{item.icon}</span>
@@ -177,7 +153,7 @@ const ProfileLayout = () => {
       </aside>
 
       <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
-        <div className='sticky top-0 z-30 border-b bg-white px-6 py-4 shadow-sm'>
+        <div className='sticky top-20 z-30 border-b bg-white px-6 py-4 shadow-sm'>
           <h1 className='text-2xl font-bold text-gray-800'>
             {menuItems.find((item) => isActive(item.path))?.label || 'Account'}
           </h1>

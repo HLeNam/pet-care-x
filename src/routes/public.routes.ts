@@ -7,7 +7,9 @@ const Home = lazy(() => import('~/pages/User/pages/Home'));
 const PersonalInfo = lazy(() => import('~/pages/User/pages/Profile/PersonalInfo'));
 const PetManagement = lazy(() => import('~/pages/User/pages/Profile/PetManagement'));
 const OrderHistory = lazy(() => import('~/pages/User/pages/Profile/OrderHistory'));
-const MedicalHistory = lazy(() => import('~/pages/User/pages/Profile/MedicalHistory'));
+const Appointment = lazy(() => import('~/pages/User/pages/Profile/Appointment'));
+const ProductDetail = lazy(() => import('~/pages/User/pages/ProductDetail'));
+const Cart = lazy(() => import('~/pages/User/pages/Cart'));
 
 const publicRoutes: AppRouteObject[] = [
   {
@@ -36,10 +38,18 @@ const publicRoutes: AppRouteObject[] = [
             Component: OrderHistory
           },
           {
-            path: 'medical-history',
-            Component: MedicalHistory
+            path: 'appointments',
+            Component: Appointment
           }
         ]
+      },
+      {
+        path: 'products/:id',
+        Component: ProductDetail
+      },
+      {
+        path: 'cart',
+        Component: Cart
       }
     ]
   }

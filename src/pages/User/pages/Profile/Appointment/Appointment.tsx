@@ -1,4 +1,4 @@
-const MedicalHistory = () => {
+const Appointment = () => {
   // Mock data
   const records = [
     {
@@ -29,7 +29,7 @@ const MedicalHistory = () => {
         {/* Vertical Line */}
         <div className='absolute top-0 left-4 h-full w-0.5 bg-gray-200' />
 
-        {records.map((record, index) => (
+        {records.map((record) => (
           <div key={record.id} className='relative pl-12'>
             {/* Timeline Dot */}
             <div className='absolute top-1 left-0 flex h-8 w-8 items-center justify-center rounded-full bg-lime-100'>
@@ -96,4 +96,4 @@ const MedicalHistory = () => {
   );
 };
 
-export default MedicalHistory;
+export default Appointment;

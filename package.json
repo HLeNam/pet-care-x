@@ -19,6 +19,7 @@
     "@tanstack/react-query-devtools": "^5.81.4",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
+    "lucide-react": "^0.562.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.58.1",

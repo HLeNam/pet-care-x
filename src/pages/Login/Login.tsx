@@ -80,10 +80,6 @@ const Login = () => {
             >
               {isLoading ? 'Signing in...' : 'Login'}
             </button>
-
-            <div className='mt-2'>
-              <SocialLoginButtons onSocialLogin={handleSocialLogin} disabled={isLoading} />
-            </div>
           </form>
         </div>
 

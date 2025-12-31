@@ -1,20 +1,38 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, Package } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, Package, X } from 'lucide-react';
 import { useCart } from '~/hooks/useCart';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart } = useCart();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    productId: string;
+    branchId: string;
+    productName: string;
+  } | null>(null);
 
   const handleUpdateQuantity = (productId: string, branchId: string, newQuantity: number) => {
     updateQuantity(productId, branchId, newQuantity);
   };
 
-  const handleRemoveItem = (productId: string, branchId: string, productName: string) => {
-    if (window.confirm(`Remove "${productName}" from cart?`)) {
-      removeFromCart(productId, branchId);
+  const openDeleteModal = (productId: string, branchId: string, productName: string) => {
+    setItemToDelete({ productId, branchId, productName });
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setItemToDelete(null);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      removeFromCart(itemToDelete.productId, itemToDelete.branchId);
       toast.success('Product removed from cart');
+      closeDeleteModal();
     }
   };
 
@@ -121,7 +139,7 @@ const Cart = () => {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleRemoveItem(item.productId, item.branchId, item.productName)}
+                        onClick={() => openDeleteModal(item.productId, item.branchId, item.productName)}
                         className='cursor-pointer rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50 sm:p-2'
                         aria-label='Remove item'
                       >
@@ -183,6 +201,50 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && itemToDelete && (
+        <div
+          className='bg-opacity-30 fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4'
+          onClick={closeDeleteModal}
+        >
+          <div className='w-full max-w-md rounded-xl bg-white p-6 shadow-xl' onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className='mb-4 flex items-center justify-between'>
+              <h3 className='text-lg font-bold text-gray-800 sm:text-xl'>Remove Item</h3>
+              <button
+                onClick={closeDeleteModal}
+                className='rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
+                aria-label='Close modal'
+              >
+                <X className='h-5 w-5' />
+              </button>
+            </div>
+
+            {/* Content */}
+            <p className='mb-6 text-sm text-gray-600 sm:text-base'>
+              Are you sure you want to remove{' '}
+              <span className='font-semibold text-gray-800'>"{itemToDelete.productName}"</span> from your cart?
+            </p>
+
+            {/* Actions */}
+            <div className='flex gap-3'>
+              <button
+                onClick={closeDeleteModal}
+                className='flex-1 cursor-pointer rounded-lg border-2 border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 sm:text-base'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className='flex-1 cursor-pointer rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 sm:text-base'
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

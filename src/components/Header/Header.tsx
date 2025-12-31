@@ -2,9 +2,11 @@ import { ShoppingCart, User, Menu, X, UserCircle, Package, Calendar, LogOut } fr
 import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '~/contexts';
 import { useState } from 'react';
+import { useCart } from '~/hooks/useCart';
 
 const Header = () => {
   const { isAuthenticated } = useAppContext();
+  const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const location = useLocation();
@@ -66,7 +68,7 @@ const Header = () => {
                     <ShoppingCart className='h-4 w-4 text-white lg:h-5 lg:w-5' />
                   </div>
                   <span className='absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-xs font-semibold text-white lg:h-5 lg:w-5'>
-                    0
+                    {cart.totalItems}
                   </span>
                 </Link>
               </div>
@@ -153,7 +155,7 @@ const Header = () => {
                   <ShoppingCart className='h-5 w-5 text-white' />
                 </div>
                 <span className='absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-xs font-semibold text-white'>
-                  0
+                  {cart.totalItems}
                 </span>
               </Link>
             </div>

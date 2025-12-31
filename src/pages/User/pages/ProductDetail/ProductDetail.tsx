@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Minus, Plus, ArrowLeft, Package, Store, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useCart } from '~/hooks/useCart';
 import type { Product } from '~/types/product.type';
 
 // Mock branches - Replace with API call
@@ -51,6 +53,7 @@ const categoryColors: Record<Product['category'], string> = {
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -126,18 +129,36 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!selectedBranch) {
-      alert('Please select a branch');
+      toast.error('Please select a branch');
       return;
     }
 
-    // TODO: Add to cart logic
-    console.log('Add to cart:', {
-      productId: product?._id,
+    if (!product) {
+      return;
+    }
+
+    const selectedBranchData = mockBranches.find((b) => b._id === selectedBranch);
+    if (!selectedBranchData) {
+      toast.error('Invalid branch selected');
+      return;
+    }
+
+    // Add to cart using context
+    addToCart({
+      productId: product._id,
+      productName: product.name,
+      productImage: product.image,
+      price: product.price,
+      quantity: quantity,
       branchId: selectedBranch,
-      quantity
+      branchName: selectedBranchData.name,
+      maxStock: selectedBranchData.stock
     });
 
-    alert(`Added ${quantity} product(s) to cart!`);
+    toast.success(`Added ${quantity} product(s) to cart!`);
+
+    // Reset quantity to 1 after adding to cart
+    setQuantity(1);
   };
 
   const openModal = (index: number) => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AppContext, INITIAL_APP_STATE } from '~/contexts/app/app.context';
+import { CartProvider } from '~/contexts/cart';
 import type { UserProfile } from '~/types/user.type';
 import { LocalStorageEventTarget } from '~/utils/auth';
 
@@ -22,7 +23,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AppContext.Provider value={{ isAuthenticated, setIsAuthenticated, profile, setProfile }}>
-      {children}
+      <CartProvider>{children}</CartProvider>
     </AppContext.Provider>
   );
 };

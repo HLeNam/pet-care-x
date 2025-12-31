@@ -325,9 +325,7 @@ const ProductDetail = () => {
               </option>
               {mockBranches.map((branch) => (
                 <option key={branch._id} value={branch._id} disabled={branch.stock === 0} className='!cursor-pointer'>
-                  <span className='!cursor-pointer'>
-                    {branch.name} {branch.stock === 0 ? '(Out of stock)' : `(${branch.stock} items)`}
-                  </span>
+                  {branch.name} {branch.stock === 0 ? '(Out of stock)' : `(${branch.stock} items)`}
                 </option>
               ))}
             </select>

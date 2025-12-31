@@ -57,7 +57,7 @@ const Header = () => {
             {/* Desktop: Dark rounded section */}
             <div className='hidden items-center gap-2 rounded-full bg-gray-800 p-2 sm:flex lg:gap-3'>
               {/* Cart */}
-              <div className='flex items-center gap-2'>
+              <div className='group relative flex items-center gap-2'>
                 <span className='hidden pl-2 text-sm font-semibold text-white lg:block'>Cart</span>
                 <Link
                   to='/cart'
@@ -71,6 +71,64 @@ const Header = () => {
                     {cart.totalItems}
                   </span>
                 </Link>
+
+                {/* Cart Dropdown Preview */}
+                {cart.totalItems > 0 && (
+                  <div className='invisible absolute top-full right-0 mt-3 w-80 rounded-xl bg-white py-2 opacity-0 shadow-xl ring-1 ring-gray-200 transition-all duration-200 group-hover:visible group-hover:opacity-100'>
+                    {/* Cart Items */}
+                    <div className='max-h-96 overflow-y-auto'>
+                      {cart.items.map((item) => (
+                        <div
+                          key={`${item.productId}-${item.branchId}`}
+                          className='flex gap-3 border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50'
+                        >
+                          {/* Product Image */}
+                          <div className='h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100'>
+                            <img
+                              src={item.productImage}
+                              alt={item.productName}
+                              className='h-full w-full object-cover'
+                            />
+                          </div>
+
+                          {/* Product Info */}
+                          <div className='flex flex-1 flex-col justify-between'>
+                            <div>
+                              <p className='line-clamp-2 text-sm font-medium text-gray-800'>{item.productName}</p>
+                              <p className='mt-0.5 text-xs text-gray-500'>{item.branchName}</p>
+                            </div>
+                            <div className='flex items-center justify-between'>
+                              <span className='text-xs text-gray-600'>Qty: {item.quantity}</span>
+                              <span className='text-sm font-semibold text-orange-600'>
+                                {(item.price * item.quantity).toLocaleString('vi-VN')}₫
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Cart Summary */}
+                    <div className='border-t border-gray-200 px-4 py-3'>
+                      <div className='mb-2 flex items-center justify-between text-sm'>
+                        <span className='text-gray-600'>Total Items:</span>
+                        <span className='font-semibold text-gray-800'>{cart.totalItems}</span>
+                      </div>
+                      <div className='mb-3 flex items-center justify-between'>
+                        <span className='text-sm font-semibold text-gray-700'>Total Price:</span>
+                        <span className='text-lg font-bold text-orange-600'>
+                          {cart.totalPrice.toLocaleString('vi-VN')}₫
+                        </span>
+                      </div>
+                      <Link
+                        to='/cart'
+                        className='block w-full rounded-lg bg-orange-500 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-orange-600'
+                      >
+                        View Cart
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Account / Avatar */}

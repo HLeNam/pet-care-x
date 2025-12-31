@@ -55,7 +55,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       let updatedItems: CartItem[];
 
       if (existingItemIndex > -1) {
-        // Item already exists, update quantity
+        // Item already exists, update quantity and price
         updatedItems = [...prevCart.items];
         const existingItem = updatedItems[existingItemIndex];
         const newQuantity = existingItem.quantity + (newItem.quantity || 1);
@@ -68,7 +68,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
         updatedItems[existingItemIndex] = {
           ...existingItem,
-          quantity: newQuantity
+          price: newItem.price, // Update price in case it changed
+          quantity: newQuantity,
+          maxStock: newItem.maxStock // Update max stock in case it changed
         };
       } else {
         // New item, add to cart

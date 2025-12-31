@@ -38,19 +38,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {categoryLabels[product.category]}
             </span>
           </div>
-          {/* Stock indicator */}
-          {product.stock < 10 && product.stock > 0 && (
-            <div className='absolute top-3 right-3'>
-              <span className='rounded-full bg-yellow-400 px-3 py-1 text-xs font-semibold text-yellow-900'>
-                Low Stock
-              </span>
-            </div>
-          )}
-          {product.stock === 0 && (
-            <div className='absolute top-3 right-3'>
-              <span className='rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white'>Out of Stock</span>
-            </div>
-          )}
         </div>
       </div>
 

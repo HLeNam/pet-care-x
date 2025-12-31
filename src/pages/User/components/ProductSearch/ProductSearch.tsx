@@ -36,7 +36,7 @@ const ProductSearch = ({ onSearch, placeholder = 'Search products...' }: Product
           value={searchValue}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder={placeholder}
-          className='w-full rounded-full border-2 border-gray-200 py-3 pr-12 pl-12 text-gray-800 transition-all duration-300 placeholder:text-gray-400 focus:border-lime-400 focus:ring-2 focus:ring-lime-200 focus:outline-none'
+          className='w-full rounded-full border-2 border-gray-200 bg-white py-3 pr-12 pl-12 text-gray-800 shadow transition-all duration-300 placeholder:text-gray-400 focus:border-lime-400 focus:ring-2 focus:ring-lime-200 focus:outline-none'
         />
         {searchValue && (
           <button

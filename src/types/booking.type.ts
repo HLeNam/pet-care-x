@@ -1,36 +1,25 @@
 import { z } from 'zod';
 
-export const BranchSchema = z.object({
-  idChiNhanh: z.number(),
-  maChiNhanh: z.string(),
-  tenChiNhanh: z.string(),
-  diaChi: z.string(),
-  soDienThoai: z.string(),
-  gioMoCua: z.string(),
-  gioDongCua: z.string()
-});
-
 export const AppointmentSchema = z.object({
-  idLichHen: z.number(),
-  idNhanVien: z.number(),
-  idThuCung: z.number(),
-  idKhachHang: z.number(),
-  idChiNhanh: z.number(),
-  thoiGianHen: z.string(),
-  trangThai: z.string(),
-  tenThuCung: z.string().optional(),
-  tenBacSi: z.string().optional(),
-  tenChiNhanh: z.string().optional()
+  appointment_id: z.number(),
+  doctor_id: z.number(),
+  pet_id: z.number(),
+  customer_id: z.number(),
+  branch_id: z.number(),
+  appointment_time: z.string(),
+  status: z.string(),
+  pet_name: z.string().optional(),
+  doctor_name: z.string().optional(),
+  branch_name: z.string().optional()
 });
 
 export const BookingFormSchema = z.object({
-  idChiNhanh: z.number().min(1, 'Vui lòng chọn chi nhánh'),
-  idThuCung: z.number().min(1, 'Vui lòng chọn thú cưng'),
-  idNhanVien: z.number().min(1, 'Vui lòng chọn bác sĩ'),
-  ngayKham: z.string().nonempty('Vui lòng chọn ngày khám'),
-  gioKham: z.string().nonempty('Vui lòng chọn giờ khám')
+  branch_id: z.number().min(1, 'Please select a branch'),
+  pet_id: z.number().min(1, 'Please select a pet'),
+  doctor_id: z.number().min(1, 'Please select a doctor'),
+  booking_date: z.string().nonempty('Please select a date'),
+  booking_time: z.string().nonempty('Please select a time')
 });
 
-export type Branch = z.infer<typeof BranchSchema>;
 export type Appointment = z.infer<typeof AppointmentSchema>;
 export type BookingForm = z.infer<typeof BookingFormSchema>;

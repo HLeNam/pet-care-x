@@ -8,16 +8,16 @@ const Booking = () => {
     const [appointments, setAppointments] = useState<Appointment[]>([
         // Mock data
         {
-            idLichHen: 1,
-            idNhanVien: 1,
-            idThuCung: 1,
-            idKhachHang: 1,
-            idChiNhanh: 1,
-            thoiGianHen: '2026-01-15T10:00:00',
-            trangThai: 'Booked',
-            tenThuCung: 'Milo',
-            tenBacSi: 'BS. Nguyễn Văn A',
-            tenChiNhanh: 'Chi nhánh Quận 1'
+            appointment_id: 1,
+            doctor_id: 1,
+            pet_id: 1,
+            customer_id: 1,
+            branch_id: 1,
+            appointment_time: '2026-01-15T10:00:00',
+            status: 'Booked',
+            pet_name: 'Milo',
+            doctor_name: 'BS. Nguyễn Văn A',
+            branch_name: 'Chi nhánh Quận 1'
         }
     ]);
 
@@ -92,10 +92,10 @@ const Booking = () => {
                         </div>
                     ) : (
                         appointments.map((appointment) => {
-                            const { dateStr, timeStr } = formatDateTime(appointment.thoiGianHen);
+                            const { dateStr, timeStr } = formatDateTime(appointment.appointment_time);
                             return (
                                 <div
-                                    key={appointment.idLichHen}
+                                    key={appointment.appointment_id}
                                     className='rounded-lg bg-white p-6 shadow transition-shadow hover:shadow-md'
                                 >
                                     <div className='flex items-start justify-between'>
@@ -107,7 +107,7 @@ const Booking = () => {
                                                 </div>
                                                 <div>
                                                     <p className='text-sm text-gray-500'>Pet</p>
-                                                    <p className='font-semibold text-gray-900'>{appointment.tenThuCung}</p>
+                                                    <p className='font-semibold text-gray-900'>{appointment.pet_name}</p>
                                                 </div>
                                             </div>
 
@@ -130,7 +130,7 @@ const Booking = () => {
                                                     <User className='h-5 w-5 text-gray-400' />
                                                     <div>
                                                         <p className='text-sm text-gray-500'>Doctor</p>
-                                                        <p className='font-medium text-gray-900'>{appointment.tenBacSi}</p>
+                                                        <p className='font-medium text-gray-900'>{appointment.doctor_name}</p>
                                                     </div>
                                                 </div>
 
@@ -139,7 +139,7 @@ const Booking = () => {
                                                     <MapPin className='h-5 w-5 text-gray-400' />
                                                     <div>
                                                         <p className='text-sm text-gray-500'>Branch</p>
-                                                        <p className='font-medium text-gray-900'>{appointment.tenChiNhanh}</p>
+                                                        <p className='font-medium text-gray-900'>{appointment.branch_name}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -147,9 +147,9 @@ const Booking = () => {
 
                                         {/* Status Badge */}
                                         <span
-                                            className={`ml-4 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(appointment.trangThai)}`}
+                                            className={`ml-4 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(appointment.status)}`}
                                         >
-                                            {appointment.trangThai}
+                                            {appointment.status}
                                         </span>
                                     </div>
                                 </div>
@@ -161,7 +161,11 @@ const Booking = () => {
 
             {/* Booking Modal */}
             {isModalOpen && (
-                <BookingModal onClose={() => setIsModalOpen(false)} onSuccess={handleBookingSuccess} />
+                <BookingModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSuccess={handleBookingSuccess}
+                />
             )}
         </div>
     );

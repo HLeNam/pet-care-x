@@ -10,6 +10,7 @@ const OrderHistory = lazy(() => import('~/pages/User/pages/Profile/OrderHistory'
 const Appointment = lazy(() => import('~/pages/User/pages/Profile/Appointment'));
 const ProductDetail = lazy(() => import('~/pages/User/pages/ProductDetail'));
 const Cart = lazy(() => import('~/pages/User/pages/Cart'));
+const Booking = lazy(() => import('~/pages/Booking'));
 
 const publicRoutes: AppRouteObject[] = [
   {
@@ -50,6 +51,10 @@ const publicRoutes: AppRouteObject[] = [
       {
         path: 'cart',
         Component: Cart
+      },
+      {
+        path: 'booking',
+        Component: Booking
       }
     ]
   }

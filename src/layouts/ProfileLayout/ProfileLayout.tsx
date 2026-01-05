@@ -53,9 +53,9 @@ const ProfileLayout = () => {
       )
     },
     {
-      id: 'appointments',
-      label: 'Appointments',
-      path: '/profile/appointments',
+      id: 'medical-history',
+      label: 'Medical History',
+      path: '/profile/medical-history',
       icon: (
         <svg className='h-5 w-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
           <path

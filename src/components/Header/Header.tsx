@@ -178,11 +178,11 @@ const Header = () => {
                           <span>My Orders</span>
                         </Link>
                         <Link
-                          to='/profile/appointments'
+                          to='/profile/medical-history'
                           className='group/item flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-orange-50 hover:text-orange-600'
                         >
                           <Calendar className='h-4 w-4 text-gray-400 group-hover/item:text-orange-500' />
-                          <span>Appointments</span>
+                          <span>Medical History</span>
                         </Link>
                       </div>
 
@@ -278,7 +278,7 @@ const Header = () => {
                   <span>My Account</span>
                 </Link>
                 <Link
-                  to='/orders'
+                  to='/profile/orders'
                   className='flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-500'
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -286,12 +286,12 @@ const Header = () => {
                   <span>My Orders</span>
                 </Link>
                 <Link
-                  to='/appointments'
+                  to='/profile/medical-history'
                   className='flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-500'
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Calendar className='h-5 w-5' />
-                  <span>Appointments</span>
+                  <span>Medical History</span>
                 </Link>
 
                 <button

@@ -7,21 +7,6 @@ const Footer = () => {
 
   return (
     <footer className='mx-2 mt-12'>
-      <div className='hidden flex-col items-center justify-between gap-6 px-4 lg:flex lg:flex-row lg:gap-4'>
-        <div className='flex-1 text-center lg:text-left'>
-          <span className='text-2xl font-semibold lg:text-3xl'>Explore Our Comprehensive Petcare Solutions</span>
-        </div>
-        <div className='hidden flex-1 items-end justify-center gap-4 lg:flex'>
-          <img src='/assets/images/yellow_cat.svg' alt='Yellow Cat' className='translate-y-1/4' />
-          <img src='/assets/images/white_rabbit.svg' alt='White Rabbit' />
-        </div>
-        <div className='flex flex-1 justify-center lg:justify-end'>
-          <button className='block cursor-pointer rounded-full bg-orange-500 px-6 py-3 text-center text-base font-semibold text-white transition-all hover:bg-orange-600'>
-            Make Appointment
-            <ArrowRight className='ml-2 inline-block h-5 w-5' />
-          </button>
-        </div>
-      </div>
 
       <div className='rounded-lg bg-gray-900 text-gray-300'>
         <div className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16'>

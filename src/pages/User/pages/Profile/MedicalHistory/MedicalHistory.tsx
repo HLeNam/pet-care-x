@@ -1,4 +1,4 @@
-const Appointment = () => {
+const MedicalHistory = () => {
   // Mock data
   const records = [
     {
@@ -96,4 +96,4 @@ const Appointment = () => {
   );
 };
 
-export default Appointment;
+export default MedicalHistory;

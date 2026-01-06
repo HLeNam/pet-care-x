@@ -1,0 +1,140 @@
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Pill, FileText, Calendar, History, LogOut } from 'lucide-react';
+import { useAppContext } from '~/contexts';
+
+const DoctorLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { setIsAuthenticated, setProfile } = useAppContext();
+  const pathname = location.pathname;
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setProfile(null);
+    navigate('/login');
+  };
+
+  const menuItems = [
+    {
+      path: '/doctor/medicine-search',
+      label: 'Medicine Search',
+      icon: Pill
+    },
+    {
+      path: '/doctor/pet-records',
+      label: 'Pet Records',
+      icon: FileText
+    },
+    {
+      path: '/doctor/appointments',
+      label: 'Appointments',
+      icon: Calendar
+    },
+    {
+      path: '/doctor/medical-history',
+      label: 'Medical History',
+      icon: History
+    }
+  ];
+
+  return (
+    <div className='flex min-h-screen flex-col bg-gray-50'>
+      {/* Header */}
+      <header className='sticky top-0 z-50 border-b border-gray-200 bg-white'>
+        <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+          <div className='flex h-16 items-center justify-between'>
+            {/* Logo */}
+            <Link to='/doctor/appointments' className='group flex items-center gap-2'>
+              <img
+                src='/assets/images/logo.svg'
+                alt='PetCareX Logo'
+                className='h-8 w-8 object-contain transition-transform duration-200 group-hover:scale-110'
+              />
+              <span className='text-xl font-bold text-gray-800 sm:text-2xl'>
+                PetCare<span className='text-orange-500'>X</span>
+                <span className='ml-2 rounded bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600'>
+                  Doctor
+                </span>
+              </span>
+            </Link>
+
+            {/* Navigation Menu */}
+            <nav className='hidden items-center space-x-1 md:flex'>
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                      isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                  >
+                    <Icon className='h-4 w-4' />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+              <button
+                onClick={handleLogout}
+                className='flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-red-50 hover:text-red-600'
+              >
+                <LogOut className='h-4 w-4' />
+                <span>Logout</span>
+              </button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className='flex md:hidden'>
+              <button
+                onClick={handleLogout}
+                className='flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600'
+              >
+                <LogOut className='h-4 w-4' />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className='flex gap-1 overflow-x-auto border-t border-gray-200 py-2 md:hidden'>
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 ${
+                    isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className='h-4 w-4' />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className='flex-1'>
+        <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
+          <Outlet />
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className='border-t border-gray-200 bg-white'>
+        <div className='mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8'>
+          <p className='text-center text-sm text-gray-500'>
+            &copy; {new Date().getFullYear()} PetCareX. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default DoctorLayout;

@@ -30,7 +30,7 @@ const categoryColors: Record<Product['category'], string> = {
 };
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
 
@@ -62,6 +62,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       return;
     }
 
+    const cartBranchId = cart.items[0]?.branchId;
+    if (cartBranchId && cartBranchId !== selectedBranch) {
+      toast.error('Cannot add items from different branches to the cart.');
+      return;
+    }
+
     addToCart({
       productId: product._id,
       productName: product.name,
@@ -73,7 +79,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
       maxStock: selectedBranchData.stock
     });
 
-    toast.success('Added to cart!');
+    toast.success(`Added 1 product to cart!`);
+
     closeBranchModal();
   };
 

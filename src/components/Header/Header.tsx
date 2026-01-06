@@ -6,7 +6,7 @@ import { useCart } from '~/hooks/useCart';
 
 const Header = () => {
   // const { isAuthenticated } = useAppContext();
-  const isAuthenticated = true;
+  const isAuthenticated = true; // Mocked for now
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

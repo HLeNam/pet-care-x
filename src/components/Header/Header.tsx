@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { useCart } from '~/hooks/useCart';
 
 const Header = () => {
-  const { isAuthenticated } = useAppContext();
-  // const isAuthenticated = true; // Mocked for now
+  // const { isAuthenticated } = useAppContext();
+  const isAuthenticated = true; // Mocked for now
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

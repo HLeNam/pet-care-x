@@ -1,4 +1,4 @@
-import { Calendar as CalendarIcon, Clock, User, Phone } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, Phone, Filter } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Pagination } from '~/pages/User/components/Pagination';
 
@@ -210,18 +210,63 @@ const ITEMS_PER_PAGE = 10;
 
 const Appointments = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [customFromDate, setCustomFromDate] = useState<string>('');
+  const [customToDate, setCustomToDate] = useState<string>('');
 
-  const totalPages = Math.ceil(mockAppointments.length / ITEMS_PER_PAGE);
+  // Filter appointments based on date
+  const filteredAppointments = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const weekEnd = new Date(today);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+
+    return mockAppointments.filter((appointment) => {
+      const appointmentDate = new Date(appointment.appointmentTime);
+      appointmentDate.setHours(0, 0, 0, 0);
+
+      switch (dateFilter) {
+        case 'today':
+          return appointmentDate.getTime() === today.getTime();
+        case 'tomorrow':
+          return appointmentDate.getTime() === tomorrow.getTime();
+        case 'week':
+          return appointmentDate >= today && appointmentDate <= weekEnd;
+        case 'custom':
+          if (customFromDate && customToDate) {
+            const fromDate = new Date(customFromDate);
+            fromDate.setHours(0, 0, 0, 0);
+            const toDate = new Date(customToDate);
+            toDate.setHours(23, 59, 59, 999);
+            return appointmentDate >= fromDate && appointmentDate <= toDate;
+          }
+          return true;
+        default:
+          return true;
+      }
+    });
+  }, [dateFilter, customFromDate, customToDate]);
+
+  const totalPages = Math.ceil(filteredAppointments.length / ITEMS_PER_PAGE);
 
   const paginatedAppointments = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return mockAppointments.slice(startIndex, endIndex);
-  }, [currentPage]);
+    return filteredAppointments.slice(startIndex, endIndex);
+  }, [filteredAppointments, currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDateFilterChange = (filter: string) => {
+    setDateFilter(filter);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const getStatusColor = (status: string) => {
@@ -242,12 +287,119 @@ const Appointments = () => {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-900'>Appointments</h1>
-          <p className='mt-1 text-sm text-gray-600'>List of medical appointments ({mockAppointments.length} total)</p>
+          <p className='mt-1 text-sm text-gray-600'>
+            List of medical appointments (
+            {dateFilter === 'all' ? `${mockAppointments.length} total` : `${filteredAppointments.length} filtered`})
+          </p>
         </div>
         <div className='flex items-center gap-2 rounded-lg bg-orange-50 px-4 py-2'>
           <CalendarIcon className='h-5 w-5 text-orange-600' />
           <span className='text-sm font-medium text-orange-600'>{new Date().toLocaleDateString('vi-VN')}</span>
         </div>
+      </div>
+
+      {/* Filter Section */}
+      <div className='rounded-lg border border-gray-200 bg-white p-4'>
+        <div className='flex flex-wrap items-center gap-4'>
+          <div className='flex items-center gap-2'>
+            <Filter className='h-5 w-5 text-gray-500' />
+            <span className='text-sm font-medium text-gray-700'>Filter by Date:</span>
+          </div>
+          <div className='flex flex-wrap gap-2'>
+            <button
+              onClick={() => handleDateFilterChange('all')}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                dateFilter === 'all'
+                  ? 'bg-orange-500 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => handleDateFilterChange('today')}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                dateFilter === 'today'
+                  ? 'bg-orange-500 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => handleDateFilterChange('tomorrow')}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                dateFilter === 'tomorrow'
+                  ? 'bg-orange-500 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Tomorrow
+            </button>
+            <button
+              onClick={() => handleDateFilterChange('week')}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                dateFilter === 'week'
+                  ? 'bg-orange-500 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              This Week
+            </button>
+            <button
+              onClick={() => handleDateFilterChange('custom')}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                dateFilter === 'custom'
+                  ? 'bg-orange-500 text-white'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Custom
+            </button>
+          </div>
+        </div>
+
+        {/* Custom Date Range Picker */}
+        {dateFilter === 'custom' && (
+          <div className='mt-4 flex flex-wrap items-center gap-4 border-t border-gray-200 pt-4'>
+            <div className='flex items-center gap-2'>
+              <label htmlFor='fromDate' className='text-sm font-medium text-gray-700'>
+                From:
+              </label>
+              <input
+                type='date'
+                id='fromDate'
+                value={customFromDate}
+                onChange={(e) => setCustomFromDate(e.target.value)}
+                className='rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+              />
+            </div>
+            <div className='flex items-center gap-2'>
+              <label htmlFor='toDate' className='text-sm font-medium text-gray-700'>
+                To:
+              </label>
+              <input
+                type='date'
+                id='toDate'
+                value={customToDate}
+                onChange={(e) => setCustomToDate(e.target.value)}
+                min={customFromDate}
+                className='rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+              />
+            </div>
+            {customFromDate && customToDate && (
+              <button
+                onClick={() => {
+                  setCustomFromDate('');
+                  setCustomToDate('');
+                }}
+                className='rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50'
+              >
+                Clear Dates
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Appointments List */}
@@ -325,11 +477,19 @@ const Appointments = () => {
         )}
 
         {/* Empty State */}
-        {mockAppointments.length === 0 && (
+        {filteredAppointments.length === 0 && (
           <div className='py-12 text-center'>
             <CalendarIcon className='mx-auto h-12 w-12 text-gray-400' />
             <h3 className='mt-4 text-sm font-medium text-gray-900'>No appointments</h3>
-            <p className='mt-2 text-sm text-gray-500'>There are no appointments scheduled for today.</p>
+            <p className='mt-2 text-sm text-gray-500'>
+              {dateFilter === 'all'
+                ? 'There are no appointments scheduled.'
+                : dateFilter === 'custom'
+                  ? customFromDate && customToDate
+                    ? 'There are no appointments in the selected date range.'
+                    : 'Please select a date range.'
+                  : `There are no appointments for ${dateFilter === 'today' ? 'today' : dateFilter === 'tomorrow' ? 'tomorrow' : 'this week'}.`}
+            </p>
           </div>
         )}
       </div>

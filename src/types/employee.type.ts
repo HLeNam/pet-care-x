@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export const Employee = z.object({
   employee_id: z.number(),

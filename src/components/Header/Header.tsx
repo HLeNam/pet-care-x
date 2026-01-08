@@ -1,6 +1,5 @@
 import { ShoppingCart, User, Menu, X, UserCircle, Package, Calendar, LogOut, PawPrint } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAppContext } from '~/contexts';
 import { useState } from 'react';
 import { useCart } from '~/hooks/useCart';
 

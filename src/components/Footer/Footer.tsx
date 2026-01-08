@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Linkedin, Instagram, ArrowRight } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '~/contexts';
 
@@ -7,7 +7,6 @@ const Footer = () => {
 
   return (
     <footer className='mx-2 mt-12'>
-
       <div className='rounded-lg bg-gray-900 text-gray-300'>
         <div className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16'>
           <div className='grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5'>

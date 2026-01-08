@@ -151,7 +151,7 @@ const DoctorSchedule = () => {
     for (let hour = openHour; hour < closeHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
+
         // Random status for demonstration
         const random = Math.random();
         let status: TimeSlot['status'];
@@ -238,7 +238,7 @@ const DoctorSchedule = () => {
             <select
               value={selectedBranch || ''}
               onChange={(e) => setSelectedBranch(Number(e.target.value))}
-              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20'
+              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
             >
               <option value=''>Choose a branch...</option>
               {branches.map((branch) => (
@@ -267,7 +267,7 @@ const DoctorSchedule = () => {
               value={selectedDoctor || ''}
               onChange={(e) => setSelectedDoctor(Number(e.target.value))}
               disabled={!selectedBranch}
-              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 disabled:cursor-not-allowed disabled:bg-gray-100'
+              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
               <option value=''>Choose a doctor...</option>
               {doctors.map((doctor) => (
@@ -375,9 +375,7 @@ const DoctorSchedule = () => {
                         )}
                       </div>
                       <div className='mt-1 text-xs font-medium'>{getStatusLabel(slot.status)}</div>
-                      {slot.appointmentInfo && (
-                        <div className='mt-1 truncate text-xs'>{slot.appointmentInfo}</div>
-                      )}
+                      {slot.appointmentInfo && <div className='mt-1 truncate text-xs'>{slot.appointmentInfo}</div>}
                     </div>
                   ))}
                 </div>

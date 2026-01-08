@@ -33,9 +33,7 @@ const ProfileLayout = () => {
       id: 'pet-management',
       label: 'Pet Management',
       path: '/profile/pets',
-      icon: (
-        <PawPrint className='h-5 w-5' />
-      )
+      icon: <PawPrint className='h-5 w-5' />
     },
     {
       id: 'order-history',
@@ -74,8 +72,9 @@ const ProfileLayout = () => {
   return (
     <div className='flex min-h-screen bg-gray-50'>
       <aside
-        className={`fixed top-16 lg:top-20 left-0 z-40 bg-white shadow-lg transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'
-          } bottom-0 overflow-y-auto`}
+        className={`fixed top-16 left-0 z-40 bg-white shadow-lg transition-all duration-300 lg:top-20 ${
+          isSidebarOpen ? 'w-64' : 'w-16'
+        } bottom-0 overflow-y-auto`}
       >
         <div className='flex h-16 items-center justify-between border-b px-4'>
           {isSidebarOpen && <h2 className='text-lg font-semibold text-gray-800'>Account</h2>}
@@ -103,8 +102,9 @@ const ProfileLayout = () => {
               <Link
                 key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${active ? 'bg-lime-50 text-lime-700' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${
+                  active ? 'bg-lime-50 text-lime-700' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                }`}
                 title={!isSidebarOpen ? item.label : undefined}
               >
                 <span className={active ? 'text-lime-600' : 'text-gray-500'}>{item.icon}</span>

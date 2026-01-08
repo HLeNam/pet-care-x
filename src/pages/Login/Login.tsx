@@ -1,14 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useLoginForm } from '~/hooks/useLoginForm';
 import { PasswordInput } from '~/components/PasswordInput';
-import { SocialLoginButtons } from '~/components/SocialLoginButtons';
 
 const Login = () => {
   const { formData, errors, isLoading, apiError, handleChange, handleCheckboxChange, handleSubmit } = useLoginForm();
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
-  };
 
   return (
     <div className='flex h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4'>

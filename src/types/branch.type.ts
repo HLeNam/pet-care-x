@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export const BranchSchema = z.object({
   branch_id: z.number(),

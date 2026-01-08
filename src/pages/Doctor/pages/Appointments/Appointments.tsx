@@ -1,16 +1,4 @@
-import {
-  Calendar as CalendarIcon,
-  Clock,
-  User,
-  Phone,
-  Filter,
-  X,
-  Mail,
-  MapPin,
-  PawPrint,
-  UserIcon,
-  Trash2
-} from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, Phone, Filter, Trash2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Pagination } from '~/pages/User/components/Pagination';
 import AppointmentDetailsModal from '~/pages/Doctor/components/AppointmentDetailsModal';

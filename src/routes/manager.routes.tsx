@@ -1,8 +1,8 @@
-import { RouteObject } from 'react-router-dom';
+import type { AppRouteObject } from '~/types/route.type';
 import ManagerLayout from '~/layouts/ManagerLayout';
 import Dashboard from '~/pages/Manager/pages/Dashboard';
 
-const managerRoutes: RouteObject[] = [
+const managerRoutes: AppRouteObject[] = [
   {
     path: '/manager',
     element: <ManagerLayout />,

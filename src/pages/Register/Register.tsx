@@ -1,14 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useRegisterForm } from '~/hooks/useRegisterForm';
 import { PasswordInput } from '~/components/PasswordInput';
-import { SocialLoginButtons } from '~/components/SocialLoginButtons';
 
 const Register = () => {
   const { formData, errors, isLoading, apiError, handleChange, handleSubmit } = useRegisterForm();
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
-  };
 
   return (
     <div className='flex h-screen items-center justify-center bg-white p-4'>

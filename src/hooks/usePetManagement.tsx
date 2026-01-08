@@ -16,55 +16,55 @@ export const usePetManagement = (): UsePetManagementReturn => {
     const [pets, setPets] = useState<Pet[]>([
         {
             pet_id: 1,
-            pet_code: "PET-001",
-            name: "Milo",
-            species: "Dog",
-            breed: "Golden Retriever",
-            gender: "Male",
-            birth_date: "2021-05-12",
-            health_status: "Healthy",
+            pet_code: 'PET-001',
+            name: 'Milo',
+            species: 'Dog',
+            breed: 'Golden Retriever',
+            gender: 'Male',
+            birth_date: '2021-05-12',
+            health_status: 'Healthy',
             owner_id: 101
         },
         {
             pet_id: 2,
-            pet_code: "PET-002",
-            name: "Luna",
-            species: "Cat",
-            breed: "British Shorthair",
-            gender: "Female",
-            birth_date: "2022-01-20",
-            health_status: "Vaccinated",
+            pet_code: 'PET-002',
+            name: 'Luna',
+            species: 'Cat',
+            breed: 'British Shorthair',
+            gender: 'Female',
+            birth_date: '2022-01-20',
+            health_status: 'Vaccinated',
             owner_id: 102
         },
         {
             pet_id: 3,
-            pet_code: "PET-003",
-            name: "Coco",
-            species: "Bird",
-            breed: "Parrot",
-            gender: "Other",
-            birth_date: "2020-08-05",
-            health_status: "Healthy",
+            pet_code: 'PET-003',
+            name: 'Coco',
+            species: 'Bird',
+            breed: 'Parrot',
+            gender: 'Other',
+            birth_date: '2020-08-05',
+            health_status: 'Healthy',
             owner_id: 101
         },
         {
             pet_id: 4,
-            pet_code: "PET-004",
-            name: "Max",
-            species: "Dog",
-            breed: "Poodle",
-            gender: "Male",
-            birth_date: "2019-11-30",
-            health_status: "Needs dental check",
+            pet_code: 'PET-004',
+            name: 'Max',
+            species: 'Dog',
+            breed: 'Poodle',
+            gender: 'Male',
+            birth_date: '2019-11-30',
+            health_status: 'Needs dental check',
             owner_id: 103
         },
         {
             pet_id: 5,
-            pet_code: "PET-005",
-            name: "Nami",
-            species: "Cat",
-            gender: "Female",
-            health_status: "Under treatment",
+            pet_code: 'PET-005',
+            name: 'Nami',
+            species: 'Cat',
+            gender: 'Female',
+            health_status: 'Under treatment',
             owner_id: 104,
             breed: '',
             birth_date: ''
@@ -122,7 +122,7 @@ export const usePetManagement = (): UsePetManagementReturn => {
             const newPet: Pet = {
                 ...petData,
                 pet_id: Date.now(),
-                owner_id: 1,
+                owner_id: 1
             };
             setPets((prev) => [...prev, newPet]);
         } catch (err) {
@@ -153,13 +153,7 @@ export const usePetManagement = (): UsePetManagementReturn => {
 
             // Mock implementation
             await new Promise((resolve) => setTimeout(resolve, 500));
-            setPets((prev) =>
-                prev.map((pet) =>
-                    pet.pet_id === petData.pet_id
-                        ? { ...pet, ...petData }
-                        : pet
-                )
-            );
+            setPets((prev) => prev.map((pet) => (pet.pet_id === petData.pet_id ? { ...pet, ...petData } : pet)));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to update pet');
             throw err;

@@ -63,29 +63,33 @@ const PetCard = ({ pet, onEdit, onDelete }: PetCardProps) => {
                 {/* Info */}
                 <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-gray-400" />
+                        <Tag className="h-4 w-4 shrink-0 text-gray-400" />
                         <span className="font-bold">Breed:</span>
-                        <span>{pet.breed}</span>
+                        <span className="truncate">{pet.breed}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-gray-400" />
+                        <CalendarDays className="h-4 w-4 flex-shrink-0 text-gray-400" />
                         <span className="font-bold">Birthday:</span>
-                        <span>{pet.birth_date}</span>
+                        <span className="truncate">{pet.birth_date}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <PawPrint className="h-4 w-4 text-gray-400" />
+                        <PawPrint className="h-4 w-4 flex-shrink-0 text-gray-400" />
                         <span className="font-bold">Species:</span>
-                        <span>{pet.species}</span>
+                        <span className="truncate">{pet.species}</span>
                     </div>
 
                     {/* Health */}
                     {pet.health_status && (
-                        <div className="flex items-center gap-2">
-                            <HeartPulse className="h-4 w-4 text-gray-400" />
-                            <span className="font-bold">Health Status:</span>
-                            <span>{pet.health_status}</span>
+                        <div className="flex items-start gap-2">
+                            <HeartPulse className="h-4 w-4 flex-shrink-0 text-gray-400 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                                <span className="font-bold">Health Status:</span>
+                                <p className="line-clamp-2 text-gray-600" title={pet.health_status}>
+                                    {pet.health_status}
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>

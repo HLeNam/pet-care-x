@@ -14,12 +14,12 @@ const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) =
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-white/40 transition-opacity"
+                className="absolute inset-0 bg-black/50 transition-opacity"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar bg-white rounded-2xl shadow-2xl">
                 {/* Header */}
                 <div className="sticky top-0 bg-linear-to-r from-lime-500 to-lime-600 text-white p-6 rounded-t-2xl">
                     <button

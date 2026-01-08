@@ -53,7 +53,7 @@ const categoryColors: Record<Product['category'], string> = {
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, cart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -143,6 +143,12 @@ const ProductDetail = () => {
       return;
     }
 
+    const cartBranchId = cart.items[0]?.branchId;
+    if (cartBranchId && cartBranchId !== selectedBranch) {
+      toast.error('Cannot add items from different branches to the cart.');
+      return;
+    }
+
     // Add to cart using context
     addToCart({
       productId: product._id,
@@ -155,7 +161,7 @@ const ProductDetail = () => {
       maxStock: selectedBranchData.stock
     });
 
-    toast.success(`Added ${quantity} product(s) to cart!`);
+    toast.success(`Added ${quantity} product${quantity > 1 ? 's' : ''} to cart!`);
 
     // Reset quantity to 1 after adding to cart
     setQuantity(1);

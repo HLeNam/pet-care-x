@@ -2,15 +2,32 @@ import { ShoppingCart, User, Menu, X, UserCircle, Package, Calendar, LogOut, Paw
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useCart } from '~/hooks/useCart';
+import { useAppContext } from '~/contexts';
+import { useMutation } from '@tanstack/react-query';
+import authApi from '~/apis/auth.api';
+import { clearUserInfoFromLocalStorage } from '~/utils/auth';
 
 const Header = () => {
-  // const { isAuthenticated } = useAppContext();
-  const isAuthenticated = true; // Mocked for now
+  const { isAuthenticated, profile } = useAppContext();
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const location = useLocation();
   const pathname = location.pathname;
+
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logoutAccount
+  });
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+
+      clearUserInfoFromLocalStorage();
+    } catch (error) {
+      console.log('🚀 ~ handleLogout ~ error:', error);
+    }
+  };
 
   return (
     <header className='sticky top-0 z-50 bg-white shadow-sm'>
@@ -149,8 +166,8 @@ const Header = () => {
                     <div className='invisible absolute right-0 mt-3 w-64 rounded-xl bg-white py-2 opacity-0 shadow-xl ring-1 ring-gray-200 transition-all duration-200 group-hover:visible group-hover:opacity-100'>
                       {/* User Info Section */}
                       <div className='border-b border-gray-100 px-4 py-3'>
-                        <p className='text-sm font-semibold text-gray-900'>John Doe</p>
-                        <p className='mt-0.5 text-xs text-gray-500'>john.doe@example.com</p>
+                        <p className='text-sm font-semibold text-gray-900'>{profile?.email?.split('@')?.[0]}</p>
+                        <p className='mt-0.5 text-xs text-gray-500'>{profile?.email}</p>
                       </div>
 
                       {/* Menu Items */}
@@ -189,7 +206,10 @@ const Header = () => {
 
                       {/* Sign Out */}
                       <div className='py-1'>
-                        <button className='group/item flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-sm text-red-600 transition-colors duration-200 hover:bg-red-50'>
+                        <button
+                          className='group/item flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-sm text-red-600 transition-colors duration-200 hover:bg-red-50'
+                          onClick={handleLogout}
+                        >
                           <LogOut className='h-4 w-4' />
                           <span>Sign Out</span>
                         </button>

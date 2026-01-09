@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '~/contexts';
-import { saveAccessTokenToLocalStorage, saveRefreshTokenToLocalStorage, saveProfileToLocalStorage } from '~/utils/auth';
+import { saveProfileToLocalStorage } from '~/utils/auth';
 import { type RegisterFormData, RegisterFormSchema } from '~/types/auth.type';
 import { ZodError } from 'zod';
+import authApi from '~/apis/auth.api';
+import type { AuthUser } from '~/types/user.type';
 
 interface UseRegisterFormReturn {
   formData: RegisterFormData;
@@ -16,7 +18,7 @@ interface UseRegisterFormReturn {
 
 export const useRegisterForm = (): UseRegisterFormReturn => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, setProfile } = useAppContext();
+  const { setProfile } = useAppContext();
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
@@ -69,35 +71,32 @@ export const useRegisterForm = (): UseRegisterFormReturn => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          password: formData.password
-        })
+      const response = await authApi.registerAccount({
+        customerEmail: formData.email,
+        customerName: formData.name,
+        phoneNumber: formData.phoneNumber,
+        password: formData.password
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+      const data = response.data;
+
+      if (!data) {
+        setApiError('Registration failed: No data returned');
+        return;
       }
 
-      const data = await response.json();
+      const user: AuthUser = {
+        idAccount: data.account.idAccount,
+        email: data.account.email,
+        userId: data.idKhachHang
+      };
 
-      // Save auth data
-      saveAccessTokenToLocalStorage(data.data.access_token);
-      saveRefreshTokenToLocalStorage(data.data.refresh_token);
-      saveProfileToLocalStorage(data.data.user);
+      saveProfileToLocalStorage(user);
 
       // Update context
-      setIsAuthenticated(true);
-      setProfile(data.data.user);
-
+      setProfile(user);
       // Navigate to home
-      navigate('/');
+      navigate('/login');
     } catch (error) {
       setApiError(error instanceof Error ? error.message : 'Registration failed');
     } finally {

@@ -26,15 +26,15 @@ const Login = () => {
                 type='text'
                 id='email'
                 name='email'
-                value={formData.mobileOrEmail}
+                value={formData.email}
                 onChange={handleChange}
                 className={`rounded-lg border bg-gray-50 px-4 py-2.5 text-sm transition-all focus:border-lime-600 focus:bg-white focus:shadow-[0_0_0_3px_rgba(132,204,22,0.1)] focus:outline-none ${
-                  errors.mobileOrEmail ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                  errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'
                 } disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-60`}
                 placeholder='Enter your email'
                 disabled={isLoading}
               />
-              {errors.mobileOrEmail && <span className='text-xs text-red-500'>{errors.mobileOrEmail}</span>}
+              {errors.email && <span className='text-xs text-red-500'>{errors.email}</span>}
             </div>
 
             <PasswordInput

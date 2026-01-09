@@ -1,4 +1,4 @@
-import type { UserProfile } from '~/types/user.type';
+import type { AuthUser } from '~/types/user.type';
 
 export const LocalStorageEventTarget = new EventTarget();
 
@@ -26,11 +26,11 @@ export const clearRefreshTokenFromLocalStorage = () => {
   localStorage.removeItem('refresh_token');
 };
 
-export const getProfileFromLocalStorage = (): UserProfile | null => {
+export const getProfileFromLocalStorage = (): AuthUser | null => {
   return JSON.parse(localStorage.getItem('profile') || 'null');
 };
 
-export const saveProfileToLocalStorage = (profile: UserProfile) => {
+export const saveProfileToLocalStorage = (profile: AuthUser) => {
   localStorage.setItem('profile', JSON.stringify(profile));
 };
 

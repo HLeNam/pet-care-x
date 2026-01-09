@@ -4,6 +4,8 @@ import { useAppContext } from '~/contexts';
 import { saveAccessTokenToLocalStorage, saveRefreshTokenToLocalStorage, saveProfileToLocalStorage } from '~/utils/auth';
 import { type LoginFormData, LoginFormSchema } from '~/types/auth.type';
 import { ZodError } from 'zod';
+import authApi from '~/apis/auth.api';
+import type { AuthUser } from '~/types/user.type';
 
 interface UseLoginFormReturn {
   formData: LoginFormData;
@@ -17,10 +19,10 @@ interface UseLoginFormReturn {
 
 export const useLoginForm = (): UseLoginFormReturn => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, setProfile } = useAppContext();
+  const { setIsAuthenticated, setProfile, profile } = useAppContext();
 
   const [formData, setFormData] = useState<LoginFormData>({
-    mobileOrEmail: '',
+    email: profile?.email || '',
     password: '',
     rememberMe: false
   });
@@ -76,31 +78,33 @@ export const useLoginForm = (): UseLoginFormReturn => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.mobileOrEmail,
-          password: formData.password
-        })
+      const response = await authApi.loginAccount({
+        email: formData.email,
+        password: formData.password
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+      const data = response.data;
+
+      if (!data) {
+        setApiError('Login failed: No data returned');
+        return;
       }
 
-      const data = await response.json();
-
       // Save auth data
-      saveAccessTokenToLocalStorage(data.data.access_token);
-      saveRefreshTokenToLocalStorage(data.data.refresh_token);
-      saveProfileToLocalStorage(data.data.user);
+      saveAccessTokenToLocalStorage(data.accessToken);
+      saveRefreshTokenToLocalStorage('');
+
+      const user: AuthUser = {
+        email: data.email,
+        idAccount: data.idAccount,
+        userId: data.userId
+      };
+
+      saveProfileToLocalStorage(user);
 
       // Update context
       setIsAuthenticated(true);
-      setProfile(data.data.user);
-
+      setProfile(user);
       // Navigate to home
       navigate('/');
     } catch (error) {

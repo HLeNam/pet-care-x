@@ -1,12 +1,12 @@
 import { createContext, useContext } from 'react';
-import type { UserProfile } from '~/types/user.type';
+import type { AuthUser } from '~/types/user.type';
 import { getAccessTokenFromLocalStorage, getProfileFromLocalStorage } from '~/utils/auth';
 
 interface AppContextInterface {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
-  profile: UserProfile | null;
-  setProfile: (profile: UserProfile | null) => void;
+  profile: AuthUser | null;
+  setProfile: (profile: AuthUser | null) => void;
 }
 
 export const INITIAL_APP_STATE: AppContextInterface = {

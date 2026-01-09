@@ -16,13 +16,10 @@ export const UserSchema = z.object({
   __v: z.number()
 });
 
-export const AuthUserSchema = UserSchema.pick({
-  _id: true,
-  roles: true,
-  email: true,
-  createdAt: true,
-  updatedAt: true,
-  __v: true
+export const AuthUserSchema = z.object({
+  idAccount: z.number(),
+  email: z.string().email(),
+  userId: z.number()
 });
 
 export const UpdateUserBodySchema = UserSchema.pick({

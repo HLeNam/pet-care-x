@@ -1,26 +1,22 @@
 import { z } from 'zod';
-import type { AuthUser } from '~/types/user.type';
-import type { ResponseApi, SuccessResponseApi } from '~/types/utils.type';
 
-export type AuthResponse = ResponseApi<{
-  access_token: string;
-  expires: number;
-  refresh_token: string;
-  expires_refresh_token: number;
-  user: AuthUser;
-}>;
+export type AuthResponse = {
+  idAccount: number;
+  email: string;
+  userId: number;
+  accessToken: string;
+};
 
-export type AuthSuccessResponse = SuccessResponseApi<{
-  access_token: string;
-  expires: number;
-  refresh_token: string;
-  expires_refresh_token: number;
-  user: AuthUser;
-}>;
+export type AuthSuccessResponse = {
+  idAccount: number;
+  email: string;
+  userId: number;
+  accessToken: string;
+};
 
-export type RefreshTokenResponse = SuccessResponseApi<{
-  access_token: string;
-}>;
+export type RefreshTokenResponse = {
+  accessToken: string;
+};
 
 export const RegisterFormSchema = z
   .object({
@@ -39,7 +35,7 @@ export const RegisterFormSchema = z
     password: z
       .string()
       .nonempty('Password is required')
-      .min(6, 'Password must be at least 6 characters')
+      .min(3, 'Password must be at least 3 characters')
       .max(160, 'Password must be at most 160 characters'),
     confirmPassword: z.string().nonempty('Please confirm your password')
   })
@@ -49,23 +45,15 @@ export const RegisterFormSchema = z
   });
 
 export const LoginFormSchema = z.object({
-  mobileOrEmail: z
-    .string()
-    .nonempty('Mobile number or email is required')
-    .refine(
-      (value) => {
-        const isEmail = /\S+@\S+\.\S+/.test(value);
-        const isMobile = /^[0-9]{10,11}$/.test(value.replace(/\s/g, ''));
-        return isEmail || isMobile;
-      },
-      { message: 'Please enter a valid email or mobile number' }
-    ),
-  password: z.string().nonempty('Password is required').min(6, 'Password must be at least 6 characters'),
+  email: z.string().nonempty('Email is required').email('Please enter a valid email address'),
+  password: z.string().nonempty('Password is required').min(3, 'Password must be at least 3 characters'),
   rememberMe: z.boolean().optional()
 });
 
 export type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 export type LoginFormData = z.infer<typeof LoginFormSchema>;
+
+export type LoginRequest = Omit<LoginFormData, 'rememberMe'>;
 
 export interface RegisterRequest {
   name: string;

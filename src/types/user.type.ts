@@ -19,7 +19,11 @@ export const UserSchema = z.object({
 export const AuthUserSchema = z.object({
   idAccount: z.number(),
   email: z.string().email(),
-  userId: z.number()
+  userId: z.number(),
+  name: z.string().max(160, 'Name must be at most 160 characters long.').optional(),
+  date_of_birth: z.string().optional(),
+  address: z.string().max(160, 'Address must be at most 160 characters long.').optional(),
+  phone: z.string().max(20, 'Phone number must be at most 20 characters long.').optional()
 });
 
 export const UpdateUserBodySchema = UserSchema.pick({

@@ -42,7 +42,7 @@ export const usePetManagement = (): UsePetManagementReturn => {
             name: 'Coco',
             species: 'Bird',
             breed: 'Parrot',
-            gender: 'Other',
+            gender: 'Male',
             birth_date: '2020-08-05',
             health_status: 'Healthy',
             owner_id: 101

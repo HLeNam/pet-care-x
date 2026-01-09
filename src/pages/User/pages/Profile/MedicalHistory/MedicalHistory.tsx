@@ -1,6 +1,6 @@
-import { useState } from "react";
-import MedicalDetailModal from "~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal";
-import type { MedicalRecord } from "~/types/medical.type";
+import { useState } from 'react';
+import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
+import type { MedicalRecord } from '~/types/medical.type';
 
 const MedicalHistory = () => {
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
@@ -23,7 +23,8 @@ const MedicalHistory = () => {
         'Dung dịch rửa tai Epi-Otic - Rửa tai 1 lần/ngày trước khi nhỏ thuốc'
       ],
       nextAppointment: 'Tái khám sau 7 ngày (27/12/2025) để kiểm tra tình trạng viêm nhiễm',
-      notes: 'Tránh để nước vào tai trong quá trình điều trị. Nếu thấy triệu chứng nặng hơn, liên hệ ngay với phòng khám.'
+      notes:
+        'Tránh để nước vào tai trong quá trình điều trị. Nếu thấy triệu chứng nặng hơn, liên hệ ngay với phòng khám.'
     },
     {
       id: 2,
@@ -34,10 +35,7 @@ const MedicalHistory = () => {
       treatment: 'Tiêm vaccine 6 bệnh (Distemper, Parvo, Hepatitis, Parainfluenza, Corona, Leptospirosis)',
       cost: 150000,
       symptoms: 'Không có triệu chứng - Khám sức khỏe định kỳ',
-      prescriptions: [
-        'Không có đơn thuốc',
-        'Theo dõi trong 24h sau tiêm, có thể có sốt nhẹ, mệt mỏi'
-      ],
+      prescriptions: ['Không có đơn thuốc', 'Theo dõi trong 24h sau tiêm, có thể có sốt nhẹ, mệt mỏi'],
       nextAppointment: 'Tiêm mũi tăng cường sau 3 tuần (06/12/2025)',
       notes: 'Thú cưng khỏe mạnh, phản ứng tốt với vaccine. Tiếp tục chế độ dinh dưỡng hiện tại.'
     },
@@ -59,7 +57,6 @@ const MedicalHistory = () => {
       notes: 'Nghi ngờ do ăn phải thức ăn không phù hợp. Khuyến cáo chỉ cho ăn thức ăn chuyên dụng.'
     }
   ];
-
 
   const handleViewDetails = (record: MedicalRecord) => {
     setSelectedRecord(record);
@@ -119,8 +116,9 @@ const MedicalHistory = () => {
               {/* Actions */}
               <div className='mt-4 flex gap-2'>
                 <button
-                  className='text-sm text-lime-600 hover:text-lime-700 hover:underline cursor-pointer'
-                  onClick={() => handleViewDetails(record)}>
+                  className='cursor-pointer text-sm text-lime-600 hover:text-lime-700 hover:underline'
+                  onClick={() => handleViewDetails(record)}
+                >
                   View Details
                 </button>
               </div>
@@ -144,11 +142,7 @@ const MedicalHistory = () => {
         </div>
       )}
 
-      <MedicalDetailModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        record={selectedRecord}
-      />
+      <MedicalDetailModal isOpen={isModalOpen} onClose={handleCloseModal} record={selectedRecord} />
     </div>
   );
 };

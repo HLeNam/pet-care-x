@@ -8,12 +8,14 @@ import {
   Stethoscope,
   Tag,
   CalendarDays,
-  HeartPulse
+  HeartPulse,
+  PawPrint
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Pet } from '~/types/pet.type';
 import MedicalRecordModal from '../../components/MedicalRecordModal/MedicalRecordModal';
 import type { MedicalRecord, MedicalRecordFormData } from '~/types/medical.type';
+import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
 
 // Temporary mock data
 const mockOwners = [
@@ -73,7 +75,7 @@ const mockMedicalRecords: MedicalRecord[] = [
       'Viên kháng sinh Cephalexin 500mg - 1 viên/ngày sau ăn trong 5 ngày',
       'Dung dịch rửa tai Epi-Otic - Rửa tai 1 lần/ngày trước khi nhỏ thuốc'
     ],
-    nextAppointment: 'Tái khám sau 7 ngày (27/12/2025) để kiểm tra tình trạng viêm nhiễm',
+    nextAppointment: '2025-12-27',
     notes: 'Tránh để nước vào tai trong quá trình điều trị. Nếu thấy triệu chứng nặng hơn, liên hệ ngay với phòng khám.'
   },
   {
@@ -86,7 +88,7 @@ const mockMedicalRecords: MedicalRecord[] = [
     cost: 150000,
     symptoms: 'Không có triệu chứng - Khám sức khỏe định kỳ',
     prescriptions: ['Không có đơn thuốc', 'Theo dõi trong 24h sau tiêm, có thể có sốt nhẹ, mệt mỏi'],
-    nextAppointment: 'Tiêm mũi tăng cường sau 3 tuần (06/12/2025)',
+    nextAppointment: '2025-12-06',
     notes: 'Thú cưng khỏe mạnh, phản ứng tốt với vaccine. Tiếp tục chế độ dinh dưỡng hiện tại.'
   },
   {
@@ -103,7 +105,7 @@ const mockMedicalRecords: MedicalRecord[] = [
       'Smecta - 1/2 gói/lần, 3 lần/ngày',
       'Thức ăn dạng nhuyễn trong 3 ngày đầu'
     ],
-    nextAppointment: 'Theo dõi tại nhà, nếu không cải thiện sau 3 ngày thì tái khám',
+    nextAppointment: '2025-10-13',
     notes: 'Nghi ngờ do ăn phải thức ăn không phù hợp. Khuyến cáo chỉ cho ăn thức ăn chuyên dụng.'
   }
 ];
@@ -111,7 +113,9 @@ const mockMedicalRecords: MedicalRecord[] = [
 const PetRecords = () => {
   const [selectedOwner, setSelectedOwner] = useState<number | null>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewRecordModalOpen, setIsNewRecordModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
 
   const selectedOwnerData = mockOwners.find((o) => o.id === selectedOwner);
   const filteredPets = mockPets.filter((p) => p.owner_id === selectedOwner);
@@ -126,19 +130,29 @@ const PetRecords = () => {
     setSelectedPet(pet || null);
   };
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
+  const handleOpenNewRecordModal = () => {
+    setIsNewRecordModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseNewRecordModal = () => {
+    setIsNewRecordModalOpen(false);
+  };
+
+  const handleOpenViewDetailsModal = (record: MedicalRecord) => {
+    setSelectedRecord(record);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseViewDetailsModal = () => {
+    setIsDetailModalOpen(false);
+    setTimeout(() => setSelectedRecord(null), 300);
   };
 
   const handleSaveMedicalRecord = (data: MedicalRecordFormData) => {
     console.log('Saving medical record:', data);
     // TODO: Implement API call to save medical record
     alert('Medical record saved successfully!');
-    handleCloseModal();
+    handleCloseNewRecordModal();
   };
 
   const calculateAge = (birthDate: string): number => {
@@ -224,15 +238,15 @@ const PetRecords = () => {
                 <div>
                   <div className='flex items-center gap-2 text-sm text-gray-600'>
                     <Tag className='h-4 w-4' />
-                    <span className='font-medium'>Tên:</span>
+                    <span className='font-medium'>Name:</span>
                   </div>
                   <p className='ml-6 font-semibold text-gray-900'>{selectedPet.name}</p>
                 </div>
 
                 <div>
                   <div className='flex items-center gap-2 text-sm text-gray-600'>
-                    <Stethoscope className='h-4 w-4' />
-                    <span className='font-medium'>Giống:</span>
+                    <PawPrint className='h-4 w-4' />
+                    <span className='font-medium'>Species:</span>
                   </div>
                   <p className='ml-6 font-semibold text-gray-900'>{selectedPet.species}</p>
                 </div>
@@ -300,8 +314,8 @@ const PetRecords = () => {
             <div className='mb-4 flex items-center justify-between'>
               <h2 className='text-lg font-semibold text-gray-900'>Medical History</h2>
               <button
-                onClick={handleOpenModal}
-                className='flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600'
+                onClick={handleOpenNewRecordModal}
+                className='flex cursor-pointer items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600'
               >
                 <PlusCircle className='h-4 w-4' />
                 Create New Medical Record
@@ -329,22 +343,32 @@ const PetRecords = () => {
                           </div>
                           <div className='space-y-1 text-sm text-gray-600'>
                             <p>
-                              <span className='font-medium'>Symptoms:</span> {record.symptoms}
+                              <span className='font-semibold'>Symptoms:</span> {record.symptoms}
                             </p>
                             <p>
-                              <span className='font-medium'>Diagnosis:</span> {record.diagnosis}
+                              <span className='font-semibold'>Diagnosis:</span> {record.diagnosis}
                             </p>
                             <p>
-                              <span className='font-medium'>Treatment:</span> {record.treatment}
+                              <span className='font-semibold'>Treatment:</span> {record.treatment}
                             </p>
                             <p className='flex items-center gap-1'>
-                              <CalendarDays className='h-3.5 w-3.5' />
-                              <span className='font-medium'>Follow-up:</span> {record.nextAppointment}
+                              <span className='font-semibold'>Follow-up:</span> {record.nextAppointment}
                             </p>
+                            {record.notes && (
+                              <p>
+                                <span className='font-semibold'>Note:</span>{' '}
+                                {record.notes.length > 100 ? `${record.notes.substring(0, 100)}...` : record.notes}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <button className='text-sm font-medium text-orange-600 hover:text-orange-700'>Details</button>
+                      <button
+                        onClick={() => handleOpenViewDetailsModal(record)}
+                        className='cursor-pointer text-sm font-medium text-orange-600 hover:text-orange-700'
+                      >
+                        Details
+                      </button>
                     </div>
                   </div>
                 ))
@@ -370,11 +394,13 @@ const PetRecords = () => {
 
       {/* Medical Record Modal */}
       <MedicalRecordModal
-        isOpen={isModalOpen}
+        isOpen={isNewRecordModalOpen}
         petName={selectedPet?.name}
-        onClose={handleCloseModal}
+        onClose={handleCloseNewRecordModal}
         onSave={handleSaveMedicalRecord}
       />
+
+      <MedicalDetailModal isOpen={isDetailModalOpen} onClose={handleCloseViewDetailsModal} record={selectedRecord} />
     </div>
   );
 };

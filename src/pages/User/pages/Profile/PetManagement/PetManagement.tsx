@@ -5,6 +5,7 @@ import DeleteConfirmModal from './components/DeleteConfirmModal';
 import PetCard from './components/PetCard';
 import PetFormModal from './components/PetFormModal';
 import { Plus } from 'lucide-react';
+import { useAppContext } from '~/contexts';
 
 type ModalMode = 'create' | 'edit' | 'delete' | null;
 
@@ -13,6 +14,7 @@ const PetManagement = () => {
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { profile } = useAppContext();
 
   const handleOpenCreateModal = () => {
     setSelectedPet(null);
@@ -47,7 +49,7 @@ const PetManagement = () => {
           gender: formData.gender,
           birth_date: formData.birth_date,
           health_status: formData.health_status,
-          owner_id: 1,
+          owner_id: profile?._id ? Number(profile._id) : 0,
           pet_id: 0,
           pet_code: ''
         });
@@ -59,7 +61,7 @@ const PetManagement = () => {
           gender: selectedPet.gender,
           birth_date: selectedPet.birth_date,
           health_status: selectedPet.health_status,
-          owner_id: 1,
+          owner_id: profile?._id ? Number(profile._id) : 0,
           pet_id: 0,
           pet_code: ''
         });
@@ -94,7 +96,7 @@ const PetManagement = () => {
         </div>
         <button
           onClick={handleOpenCreateModal}
-          className='flex items-center gap-2 rounded-lg bg-lime-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700 cursor-pointer'
+          className='flex cursor-pointer items-center gap-2 rounded-lg bg-lime-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700'
         >
           <Plus className='h-5 w-5' />
           Add Pet
@@ -135,7 +137,7 @@ const PetManagement = () => {
           <p className='mt-2 text-gray-600'>Get started by adding your first pet</p>
           <button
             onClick={handleOpenCreateModal}
-            className='mt-6 rounded-lg bg-lime-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700 cursor-pointer'
+            className='mt-6 cursor-pointer rounded-lg bg-lime-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700'
           >
             Add your first pet
           </button>

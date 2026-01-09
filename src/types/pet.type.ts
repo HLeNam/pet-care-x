@@ -6,7 +6,7 @@ export const PetSchema = z.object({
   name: z.string(),
   species: z.string(),
   breed: z.string(),
-  gender: z.enum(['Male', 'Female', 'Other']),
+  gender: z.enum(['Male', 'Female']),
   birth_date: z.string(),
   health_status: z.string(),
   owner_id: z.number()
@@ -19,7 +19,7 @@ export const PetFormSchema = z.object({
   name: z.string().min(1, 'Pet name is required').max(50, 'Pet name must be at most 50 characters'),
   species: z.string(),
   breed: z.string().min(1, 'Breed is required').max(50, 'Breed must be at most 50 characters'),
-  gender: z.enum(['Male', 'Female', 'Other']),
+  gender: z.enum(['Male', 'Female']),
   birth_date: z.string().date(),
   health_status: z.string()
 });

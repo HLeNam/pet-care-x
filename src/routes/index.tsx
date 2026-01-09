@@ -5,8 +5,9 @@ import guestRoutes from '~/routes/guest.routes';
 import publicRoutes from '~/routes/public.routes';
 import doctorRoutes from '~/routes/doctor.routes';
 import managerRoutes from '~/routes/manager.routes';
+import staffRoutes from '~/routes/staff.routes';
 
-const routes: AppRouteObject[] = [...publicRoutes, ...guestRoutes, ...doctorRoutes, ...managerRoutes];
+const routes: AppRouteObject[] = [...publicRoutes, ...guestRoutes, ...doctorRoutes, ...managerRoutes, ...staffRoutes];
 
 const router = createBrowserRouter(routes);
 

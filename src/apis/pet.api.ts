@@ -4,7 +4,13 @@ import {
   type GetPetMedicalRecordsParams,
   type GetPetMedicalRecordsResponse,
   type GetPetsByOwnerIdParams,
-  type GetPetsByOwnerIdResponse
+  type GetPetsByOwnerIdResponse,
+  type CreatePetParams,
+  type CreatePetResponse,
+  type UpdatePetParams,
+  type UpdatePetResponse,
+  type DeletePetParams,
+  type DeletePetResponse
 } from '~/types/pet.type';
 import type { ResponseApi } from '~/types/utils.type';
 import http from '~/utils/http';
@@ -34,10 +40,25 @@ const getPetMedicalRecords = (params: GetPetMedicalRecordsParams) => {
   );
 };
 
+const createPet = (params: CreatePetParams) => {
+  return Promise.reject(new Error('API endpoint not yet implemented'));
+};
+
+const updatePet = (params: UpdatePetParams) => {
+  return Promise.reject(new Error('API endpoint not yet implemented'));
+};
+
+const deletePet = (params: DeletePetParams) => {
+  return Promise.reject(new Error('API endpoint not yet implemented'));
+};
+
 const petApi = {
   getPetByOwnerId,
   getPetDetails,
-  getPetMedicalRecords
+  getPetMedicalRecords,
+  createPet,
+  updatePet,
+  deletePet
 };
 
 export default petApi;

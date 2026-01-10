@@ -26,6 +26,11 @@ export const PetFormSchema = z.object({
 
 export type PetFormInput = z.input<typeof PetFormSchema>;
 
+export type PetOwner = {
+  name: string;
+  phone: string;
+};
+
 export type GetPetsByOwnerIdParams = {
   idKhachHang: number;
   pageNo?: number;
@@ -85,4 +90,43 @@ export type GetPetMedicalRecordsResponse = {
   totalPage: number;
   totalElements: number;
   items: GetPetMedicalRecordItemResponse[];
+};
+
+export type CreatePetParams = {
+  ten: string;
+  loai: string;
+  giong: string;
+  gioiTinh: string;
+  ngaySinh: string;
+  tinhTrangSucKhoe: string;
+  idChu: number;
+};
+
+export type CreatePetResponse = {
+  status: number;
+  message: string;
+};
+
+export type UpdatePetParams = {
+  idThuCung: number;
+  ten: string;
+  loai: string;
+  giong: string;
+  gioiTinh: string;
+  ngaySinh: string;
+  tinhTrangSucKhoe: string;
+};
+
+export type UpdatePetResponse = {
+  status: number;
+  message: string;
+};
+
+export type DeletePetParams = {
+  idThuCung: number;
+};
+
+export type DeletePetResponse = {
+  status: number;
+  message: string;
 };

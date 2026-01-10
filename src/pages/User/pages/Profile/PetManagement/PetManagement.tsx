@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { usePetList } from '~/hooks/usePetManagement';
+import { toast } from 'react-toastify';
+import { usePetList, useCreatePet, useUpdatePet, useDeletePet } from '~/hooks/usePetManagement';
+import { useAppContext } from '~/contexts';
 import type { Pet, PetFormInput } from '~/types/pet.type';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import PetCard from './components/PetCard';
@@ -9,10 +11,14 @@ import { Plus } from 'lucide-react';
 type ModalMode = 'create' | 'edit' | 'delete' | null;
 
 const PetManagement = () => {
+  const { profile } = useAppContext();
   const { pets, isLoading } = usePetList({ pageNo: 1, pageSize: 100 });
+  const createPetMutation = useCreatePet();
+  const updatePetMutation = useUpdatePet();
+  const deletePetMutation = useDeletePet();
+  
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpenCreateModal = () => {
     setSelectedPet(null);
@@ -39,15 +45,36 @@ const PetManagement = () => {
 
   const handleSubmitForm = async (formData: PetFormInput) => {
     try {
-      // TODO: Implement pet create/update mutations
-      console.log('Pet form submitted:', formData);
-      console.log('Mode:', modalMode);
-      console.log('Selected pet:', selectedPet);
+      if (modalMode === 'create') {
+        // Create new pet
+        await createPetMutation.mutateAsync({
+          ten: formData.name,
+          loai: formData.species,
+          giong: formData.breed,
+          gioiTinh: formData.gender,
+          ngaySinh: formData.birth_date,
+          tinhTrangSucKhoe: formData.health_status,
+          idChu: profile!.idAccount
+        });
+        toast.success('Pet created successfully!');
+      } else if (modalMode === 'edit' && selectedPet) {
+        // Update existing pet
+        await updatePetMutation.mutateAsync({
+          idThuCung: selectedPet.pet_id,
+          ten: formData.name,
+          loai: formData.species,
+          giong: formData.breed,
+          gioiTinh: formData.gender,
+          ngaySinh: formData.birth_date,
+          tinhTrangSucKhoe: formData.health_status
+        });
+        toast.success('Pet updated successfully!');
+      }
 
-      // For now, just close the modal
       handleCloseModal();
     } catch (error) {
-      console.error('Failed to submit pet form:', error);
+      const errorMessage = (error as Error)?.message || 'Operation failed';
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -55,17 +82,15 @@ const PetManagement = () => {
   const handleConfirmDelete = async () => {
     if (!selectedPet) return;
 
-    setIsDeleting(true);
     try {
-      // TODO: Implement pet delete mutation
-      console.log('Deleting pet:', selectedPet.pet_id);
-
-      // For now, just close the modal
+      await deletePetMutation.mutateAsync({
+        idThuCung: selectedPet.pet_id
+      });
+      toast.success('Pet deleted successfully!');
       handleCloseModal();
     } catch (error) {
-      console.error('Failed to delete pet:', error);
-    } finally {
-      setIsDeleting(false);
+      const errorMessage = (error as Error)?.message || 'Failed to delete pet';
+      toast.error(errorMessage);
     }
   };
 
@@ -142,7 +167,7 @@ const PetManagement = () => {
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
         pet={selectedPet}
-        isDeleting={isDeleting}
+        isDeleting={deletePetMutation.isPending}
       />
     </div>
   );

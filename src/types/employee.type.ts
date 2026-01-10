@@ -10,3 +10,24 @@ export const Employee = z.object({
 });
 
 export type Employee = z.infer<typeof Employee>;
+
+export type GetDoctorsAvailableParams = {
+  idChiNhanh: number;
+  ngayHen: string;
+  gioBatDau: string;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorAvailableItemResponse = {
+  idBacSi: number;
+  tenBacSi: string;
+};
+
+export type DoctorAvailableListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: DoctorAvailableItemResponse[];
+};

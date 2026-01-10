@@ -11,3 +11,16 @@ export const BranchSchema = z.object({
 });
 
 export type Branch = z.infer<typeof BranchSchema>;
+
+export type BranchItemResponse = {
+  idChiNhanh: number;
+  tenChiNhanh: string;
+};
+
+export type BranchListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: BranchItemResponse[];
+};

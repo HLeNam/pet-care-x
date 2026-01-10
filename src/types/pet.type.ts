@@ -25,3 +25,23 @@ export const PetFormSchema = z.object({
 });
 
 export type PetFormInput = z.input<typeof PetFormSchema>;
+
+export type GetPetsByOwnerIdParams = {
+  idKhachHang: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type GetPetsByOwnerIdItemResponse = {
+  idThuCung: number;
+  maThuCung: string;
+  ten: string;
+};
+
+export type GetPetsByOwnerIdResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: GetPetsByOwnerIdItemResponse[];
+};

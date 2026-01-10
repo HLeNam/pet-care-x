@@ -1,29 +1,37 @@
-import { X, UserIcon, Phone, Mail, MapPin, PawPrint, Calendar as CalendarIcon, Clock } from 'lucide-react';
-
-interface Appointment {
-  id: number;
-  customerName: string;
-  petName: string;
-  petType: string;
-  petBreed: string;
-  petAge: number;
-  appointmentTime: string;
-  status: string;
-  phone: string;
-  email: string;
-  address: string;
-  reason: string;
-  notes: string;
-}
+import { X, UserIcon, Calendar as CalendarIcon, Clock, Building2, PawPrint } from 'lucide-react';
+import type { DoctorAppointmentItemResponse } from '~/types/employee.type';
+import { usePetDetails } from '~/hooks/usePetDetails';
 
 interface AppointmentDetailsModalProps {
   isOpen: boolean;
-  appointment: Appointment | null;
+  appointment: DoctorAppointmentItemResponse | null;
   onClose: () => void;
 }
 
 const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDetailsModalProps) => {
+  const { data: petDetailsData, isLoading: isPetLoading } = usePetDetails({
+    idThuCung: appointment?.idThuCung ?? null,
+    enabled: isOpen && !!appointment?.idThuCung
+  });
+
+  const petDetails = petDetailsData?.data?.data;
+
   if (!isOpen || !appointment) return null;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Đã xác nhận':
+      case 'Đã Hoàn Thành':
+        return 'bg-green-100 text-green-800';
+      case 'Chờ xác nhận':
+      case 'Đã Đặt':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Đã hủy':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4' onClick={onClose}>
@@ -36,7 +44,7 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
           <h2 className='text-2xl font-bold text-gray-900'>Appointment Details</h2>
           <button
             onClick={onClose}
-            className='rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
+            className='cursor-pointer rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
           >
             <X className='h-6 w-6' />
           </button>
@@ -48,20 +56,10 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
             {/* Status Badge */}
             <div className='flex items-center justify-between'>
               <div className='text-sm text-gray-500'>
-                Appointment ID: <span className='font-medium text-gray-900'>#{appointment.id}</span>
+                Appointment ID: <span className='font-medium text-gray-900'>#{appointment.idLichHen}</span>
               </div>
-              <span
-                className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                  appointment.status === 'Confirmed'
-                    ? 'bg-green-100 text-green-800'
-                    : appointment.status === 'Pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : appointment.status === 'Completed'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {appointment.status}
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(appointment.trangThai)}`}>
+                {appointment.trangThai}
               </span>
             </div>
 
@@ -74,27 +72,13 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
               <div className='space-y-2'>
                 <div className='flex items-start'>
                   <span className='w-24 text-sm font-medium text-gray-600'>Name:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.customerName}</span>
+                  <span className='flex-1 text-sm text-gray-900'>{appointment.tenKhachHang || 'N/A'}</span>
                 </div>
                 <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Phone:</span>
+                  <span className='w-24 text-sm font-medium text-gray-600'>Branch:</span>
                   <span className='flex items-center text-sm text-gray-900'>
-                    <Phone className='mr-1 h-4 w-4 text-gray-400' />
-                    {appointment.phone}
-                  </span>
-                </div>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Email:</span>
-                  <span className='flex items-center text-sm text-gray-900'>
-                    <Mail className='mr-1 h-4 w-4 text-gray-400' />
-                    {appointment.email}
-                  </span>
-                </div>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Address:</span>
-                  <span className='flex items-center text-sm text-gray-900'>
-                    <MapPin className='mr-1 h-4 w-4 text-gray-400' />
-                    {appointment.address}
+                    <Building2 className='mr-1 h-4 w-4 text-gray-400' />
+                    {appointment.tenChiNhanh || 'N/A'}
                   </span>
                 </div>
               </div>
@@ -106,24 +90,44 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
                 <PawPrint className='mr-2 h-5 w-5 text-orange-500' />
                 Pet Information
               </h3>
-              <div className='space-y-2'>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Name:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.petName}</span>
+              {isPetLoading ? (
+                <div className='text-sm text-gray-500'>Loading pet details...</div>
+              ) : (
+                <div className='space-y-2'>
+                  <div className='flex items-start'>
+                    <span className='w-32 text-sm font-medium text-gray-600'>Name:</span>
+                    <span className='flex-1 text-sm text-gray-900'>{appointment.tenThuCung || 'N/A'}</span>
+                  </div>
+                  {petDetails && (
+                    <>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Code:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.maThuCung || 'N/A'}</span>
+                      </div>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Species:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.loai || 'N/A'}</span>
+                      </div>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Breed:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.giong || 'N/A'}</span>
+                      </div>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Gender:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.gioiTinh || 'N/A'}</span>
+                      </div>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Birth Date:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.ngaySinh || 'N/A'}</span>
+                      </div>
+                      <div className='flex items-start'>
+                        <span className='w-32 text-sm font-medium text-gray-600'>Health Status:</span>
+                        <span className='flex-1 text-sm text-gray-900'>{petDetails.tinhTrangSucKhoe || 'N/A'}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Type:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.petType}</span>
-                </div>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Breed:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.petBreed}</span>
-                </div>
-                <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Age:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.petAge}</span>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Appointment Information */}
@@ -134,22 +138,30 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
               </h3>
               <div className='space-y-2'>
                 <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Date & Time:</span>
+                  <span className='w-32 text-sm font-medium text-gray-600'>Date:</span>
                   <span className='flex items-center text-sm text-gray-900'>
-                    <Clock className='mr-1 h-4 w-4 text-gray-400' />
-                    {appointment.appointmentTime}
+                    <CalendarIcon className='mr-1 h-4 w-4 text-gray-400' />
+                    {appointment.ngayHen}
                   </span>
                 </div>
                 <div className='flex items-start'>
-                  <span className='w-24 text-sm font-medium text-gray-600'>Reason:</span>
-                  <span className='flex-1 text-sm text-gray-900'>{appointment.reason}</span>
+                  <span className='w-32 text-sm font-medium text-gray-600'>Start Time:</span>
+                  <span className='flex items-center text-sm text-gray-900'>
+                    <Clock className='mr-1 h-4 w-4 text-gray-400' />
+                    {appointment.gioBatDau}
+                  </span>
                 </div>
-                {appointment.notes && (
-                  <div className='flex items-start'>
-                    <span className='w-24 text-sm font-medium text-gray-600'>Notes:</span>
-                    <span className='flex-1 text-sm text-gray-900'>{appointment.notes}</span>
-                  </div>
-                )}
+                <div className='flex items-start'>
+                  <span className='w-32 text-sm font-medium text-gray-600'>End Time:</span>
+                  <span className='flex items-center text-sm text-gray-900'>
+                    <Clock className='mr-1 h-4 w-4 text-gray-400' />
+                    {appointment.gioKetThuc}
+                  </span>
+                </div>
+                <div className='flex items-start'>
+                  <span className='w-32 text-sm font-medium text-gray-600'>Doctor:</span>
+                  <span className='flex-1 text-sm text-gray-900'>{appointment.tenBacSi}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -159,7 +171,7 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
         <div className='flex justify-end border-t border-gray-200 bg-gray-50 px-6 py-4'>
           <button
             onClick={onClose}
-            className='rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+            className='cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
           >
             Close
           </button>

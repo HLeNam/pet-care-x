@@ -68,13 +68,6 @@ export type GetPetMedicalRecordsParams = {
   pageSize?: number;
 };
 
-//  "idHoSo": 13,
-//         "thoiGianKham": "2025-12-10T14:20:00",
-//         "idThuCung": 13,
-//         "trieuChung": "Nôn dịch vàng",
-//         "chuanDoan": "Viêm dạ dày",
-//         "ngayTaiKham": "2025-12-13",
-//         "idBacSi": 9
 export type GetPetMedicalRecordItemResponse = {
   idHoSo: number;
   thoiGianKham: string;

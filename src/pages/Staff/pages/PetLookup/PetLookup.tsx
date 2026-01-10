@@ -134,7 +134,7 @@ const PetLookup = () => {
                 type='button'
                 onClick={handlePhoneSearch}
                 disabled={isLoadingOwner || !ownerPhone.trim()}
-                className='flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-400'
+                className='flex cursor-pointer items-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-400'
               >
                 <Search className='h-4 w-4' />
                 Search
@@ -164,7 +164,7 @@ const PetLookup = () => {
               value={selectedPet || ''}
               onChange={(e) => setSelectedPet(Number(e.target.value) || null)}
               disabled={!customerInfo || isLoadingOwner || isLoadingPets}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
+              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
               <option value=''>{isLoadingPets ? 'Loading pets...' : '-- Select Pet --'}</option>
               {filteredPets.map((pet) => (
@@ -317,7 +317,7 @@ const PetLookup = () => {
                       </div>
                       <button
                         onClick={() => setSelectedRecord(record.idHoSo)}
-                        className='text-sm font-medium text-orange-600 hover:text-orange-700'
+                        className='cursor-pointer text-sm font-medium text-orange-600 hover:text-orange-700'
                       >
                         View Details
                       </button>
@@ -346,7 +346,7 @@ const PetLookup = () => {
               <h2 className='text-xl font-bold text-gray-900'>Medical Record Details</h2>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className='rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
+                className='cursor-pointer rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
               >
                 <X className='h-5 w-5' />
               </button>
@@ -416,7 +416,7 @@ const PetLookup = () => {
             <div className='rounded-b-lg border-t border-gray-200 bg-gray-50 p-6'>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className='w-full rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto'
+                className='w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto'
               >
                 Close
               </button>

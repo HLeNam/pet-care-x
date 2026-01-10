@@ -168,7 +168,7 @@ const CreateAppointment = () => {
               value={formData.branchId}
               onChange={(e) => setFormData({ ...formData, branchId: e.target.value, doctorId: '' })}
               disabled={isLoadingBranches}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
+              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
               <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Select branch'}</option>
               {branches.map((branch) => (
@@ -191,7 +191,7 @@ const CreateAppointment = () => {
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value, doctorId: '' })}
                 min={new Date().toISOString().split('T')[0]}
-                className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none'
+                className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none'
               />
             </div>
 
@@ -204,7 +204,7 @@ const CreateAppointment = () => {
                 id='time'
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value, doctorId: '' })}
-                className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none'
+                className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none'
               />
             </div>
           </div>
@@ -227,7 +227,7 @@ const CreateAppointment = () => {
                 type='button'
                 onClick={handlePhoneSearch}
                 disabled={isLoadingCustomer || !formData.customerPhone}
-                className='flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-400'
+                className='flex cursor-pointer items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-400'
               >
                 <Search className='h-4 w-4' />
                 Search
@@ -253,7 +253,7 @@ const CreateAppointment = () => {
               value={formData.petId}
               onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
               disabled={!customerInfo || isLoadingPets}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
+              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
               <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select pet'}</option>
               {availablePets.map((pet) => (
@@ -281,7 +281,7 @@ const CreateAppointment = () => {
               value={formData.doctorId}
               onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
               disabled={isLoadingDoctors || availableDoctors.length === 0}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
+              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
               <option value=''>Select doctor</option>
               {availableDoctors.map((doctor) => (
@@ -309,14 +309,14 @@ const CreateAppointment = () => {
               type='button'
               onClick={handleReset}
               disabled={createAppointmentMutation.isPending}
-              className='flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
+              className='flex-1 cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Cancel
             </button>
             <button
               type='submit'
               disabled={createAppointmentMutation.isPending}
-              className='flex-1 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50'
+              className='flex-1 cursor-pointer rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
               {createAppointmentMutation.isPending ? 'Creating...' : 'Confirm Appointment'}
             </button>

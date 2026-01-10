@@ -72,11 +72,11 @@ const AppointmentEditModal = ({ isOpen, appointment, onClose, onSave, onChange }
                   onChange={(e) => onChange('trangThai', e.target.value)}
                   className='w-full cursor-pointer rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none'
                 >
-                  <option value='Chờ xác nhận'>Chờ xác nhận</option>
-                  <option value='Đã xác nhận'>Đã xác nhận</option>
+                  {/* <option value='Chờ xác nhận'>Chờ xác nhận</option> */}
+                  {/* <option value='Đã xác nhận'>Đã xác nhận</option> */}
                   <option value='Đã Đặt'>Đã Đặt</option>
                   <option value='Đã Hoàn Thành'>Đã Hoàn Thành</option>
-                  <option value='Đã hủy'>Đã hủy</option>
+                  {/* <option value='Đã hủy'>Đã hủy</option> */}
                 </select>
               </div>
             </div>

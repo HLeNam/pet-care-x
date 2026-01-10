@@ -1,5 +1,5 @@
 export type GetCustomerByPhoneParams = {
-  phoneNumber?: string;
+  soDienThoai?: string;
 };
 
 export type GetCustomerByPhoneResponse = {

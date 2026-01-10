@@ -32,6 +32,44 @@ export type DoctorAvailableListResponse = {
   items: DoctorAvailableItemResponse[];
 };
 
+export type GetDoctorScheduleParams = {
+  idBacSi: number;
+  idChiNhanh: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorScheduleTimeSlot = {
+  gioBatDau: string;
+  gioKetThuc: string;
+  available: boolean;
+};
+
+export type DoctorScheduleItemResponse = {
+  date: string;
+  timeSlots: DoctorScheduleTimeSlot[];
+};
+
+export type DoctorScheduleListResponse = {
+  items: DoctorScheduleItemResponse[];
+};
+
+export type GetDoctorsByBranchParams = {
+  idChiNhanh: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorByBranchItemResponse = {
+  idBacSi: number;
+  tenBacSi: string;
+};
+
+export type DoctorsByBranchListResponse = {
+  idBacSi: number;
+  tenBacSi: number;
+};
+
 export type CreateAppointmentRequest = {
   idChiNhanh: number;
   tenChiNhanh: string;

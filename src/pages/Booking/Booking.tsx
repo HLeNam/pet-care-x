@@ -162,9 +162,7 @@ const Booking = () => {
       </div>
 
       {/* Booking Modal */}
-      {isModalOpen && (
-        <BookingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={handleBookingSuccess} />
-      )}
+      {isModalOpen && <BookingModal onClose={() => setIsModalOpen(false)} onSuccess={handleBookingSuccess} />}
     </div>
   );
 };

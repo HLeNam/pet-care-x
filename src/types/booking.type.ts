@@ -23,3 +23,21 @@ export const BookingFormSchema = z.object({
 
 export type Appointment = z.infer<typeof AppointmentSchema>;
 export type BookingForm = z.infer<typeof BookingFormSchema>;
+
+export type CreateAppointmentParams = {
+  idChiNhanh: number;
+  tenChiNhanh: string;
+  idKhachHang: number;
+  tenKhachHang: string;
+  idThuCung: number;
+  tenThuCung: string;
+  ngayHen: string;
+  gioBatDau: string;
+  idNhanVien: number;
+  tenBacSi: string;
+};
+
+export type CreateAppointmentResponse = {
+  status: number;
+  message: string;
+};

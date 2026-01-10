@@ -1,4 +1,11 @@
-import type { DoctorAvailableListResponse, GetDoctorsAvailableParams } from '~/types/employee.type';
+import type {
+  DoctorAvailableListResponse,
+  GetDoctorsAvailableParams,
+  GetDoctorScheduleParams,
+  GetDoctorsByBranchParams,
+  DoctorsByBranchListResponse,
+  DoctorScheduleItemResponse
+} from '~/types/employee.type';
 import type { ResponseApi } from '~/types/utils.type';
 import http from '~/utils/http';
 
@@ -10,8 +17,26 @@ const getDoctorsAvailable = async (params: GetDoctorsAvailableParams) => {
   });
 };
 
+const getDoctorSchedule = async (params: GetDoctorScheduleParams) => {
+  return http.get<ResponseApi<DoctorScheduleItemResponse[]>>(`http://localhost:9090/api/nhanvien/bacsi/lich`, {
+    params: {
+      ...params
+    }
+  });
+};
+
+const getDoctorsByBranch = async (params: GetDoctorsByBranchParams) => {
+  return http.get<ResponseApi<DoctorsByBranchListResponse>>(`http://localhost:9090/api/nhanvien/bacsi/chinhanh`, {
+    params: {
+      ...params
+    }
+  });
+};
+
 const staffApi = {
-  getDoctorsAvailable
+  getDoctorsAvailable,
+  getDoctorSchedule,
+  getDoctorsByBranch
 };
 
 export default staffApi;

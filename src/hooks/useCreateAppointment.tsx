@@ -1,18 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import appointmentApi from '~/apis/appointment.api';
-import type { CreateAppointmentRequest } from '~/types/employee.type';
+import type { CreateAppointmentParams } from '~/types/booking.type';
 
-/**
- * Hook để tạo lịch hẹn mới
- * Sử dụng useMutation vì đây là thao tác thay đổi dữ liệu (POST)
- */
 export const useCreateAppointment = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (data: CreateAppointmentRequest) => appointmentApi.createAppointment(data),
+    mutationFn: (params: CreateAppointmentParams) => appointmentApi.createAppointment(params),
     onSuccess: () => {
-      // Có thể invalidate queries liên quan nếu cần
-      // queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      // Invalidate relevant queries after successful appointment creation
+      queryClient.invalidateQueries({ queryKey: ['doctor-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['doctors-available'] });
     }
   });

@@ -11,9 +11,11 @@ import { useAppContext } from '~/contexts';
 function withAuthGuard<P>(Component: React.ComponentType<P>, redirectTo: string = '/login') {
   const GuardedComponent: React.FC<React.PropsWithChildren<P>> = (props: React.PropsWithChildren<P>) => {
     const location = useLocation();
-    const { isAuthenticated } = useAppContext();
+    const { isAuthenticated, profile } = useAppContext();
 
-    if (!isAuthenticated) {
+    const isCustomer = profile?.roles?.includes('ROLE_CUSTOMER');
+
+    if (!isAuthenticated || !isCustomer) {
       return <Navigate to={redirectTo} state={{ from: location }} replace />;
     }
 

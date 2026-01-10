@@ -77,8 +77,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 {product.price.toLocaleString('vi-VN')}₫
               </span>
             </div>
-            <button className='flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-lime-500 px-3 py-2 text-white transition-all duration-300 hover:scale-110 hover:bg-lime-600 sm:px-4'>
-              <span className='hidden font-semibold sm:inline'>View Detail</span>
+            <button className='flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-lime-500 px-3 py-1 text-white transition-all duration-300 hover:scale-110 hover:bg-lime-600 sm:px-4 sm:py-2'>
+              <span className='text-sm font-semibold sm:inline'>View Detail</span>
             </button>
           </div>
         </div>

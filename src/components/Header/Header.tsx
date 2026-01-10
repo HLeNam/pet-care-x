@@ -252,7 +252,7 @@ const Header = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className='rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden'
+              className='cursor-pointer rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden'
               aria-label='Toggle menu'
             >
               {isMobileMenuOpen ? <X className='h-6 w-6 text-gray-700' /> : <Menu className='h-6 w-6 text-gray-700' />}
@@ -293,12 +293,20 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link
-                  to='/profile'
+                  to='/profile/personal-info'
                   className='flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-500'
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <UserCircle className='h-5 w-5' />
                   <span>My Account</span>
+                </Link>
+                <Link
+                  to='/profile/pets'
+                  className='flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-500'
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <PawPrint className='h-5 w-5' />
+                  <span>My Pets</span>
                 </Link>
                 <Link
                   to='/profile/orders'
@@ -318,8 +326,11 @@ const Header = () => {
                 </Link>
 
                 <button
-                  className='mt-2 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50'
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  className='mt-2 flex w-full cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50'
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   <LogOut className='h-5 w-5' />
                   <span>Sign Out</span>

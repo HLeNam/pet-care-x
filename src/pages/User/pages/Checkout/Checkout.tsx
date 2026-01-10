@@ -261,9 +261,12 @@ const Checkout = () => {
                     onChange={handleInputChange}
                     className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none'
                   >
-                    <option value='CASH'>Cash on Delivery</option>
+                    {/* <option value='CASH'>Cash on Delivery</option>
                     <option value='CARD'>Credit/Debit Card</option>
-                    <option value='BANK_TRANSFER'>Bank Transfer</option>
+                    <option value='BANK_TRANSFER'>Bank Transfer</option> */}
+                    <option value='Tiền mặt'>Cash on Delivery</option>
+                    <option value='Thẻ tín dụng'>Credit/Debit Card</option>
+                    <option value='Chuyển khoản'>Bank Transfer</option>
                   </select>
                 </div>
               </div>

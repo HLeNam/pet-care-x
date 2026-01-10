@@ -44,3 +44,33 @@ export type CreateAppointmentRequest = {
   idNhanVien: number;
   tenBacSi: string;
 };
+
+export type GetDoctorAppointmentsParams = {
+  idNhanVien: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorAppointmentItemResponse = {
+  idLichHen: number;
+  idNhanVien: number;
+  tenBacSi: string;
+  idThuCung: number | null;
+  tenThuCung: string | null;
+  idKhachHang: number | null;
+  tenKhachHang: string | null;
+  idChiNhanh: number;
+  tenChiNhanh: string | null;
+  ngayHen: string;
+  gioBatDau: string;
+  gioKetThuc: string;
+  trangThai: string;
+};
+
+export type DoctorAppointmentListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: DoctorAppointmentItemResponse[];
+};

@@ -16,7 +16,7 @@ const PetManagement = () => {
   const createPetMutation = useCreatePet();
   const updatePetMutation = useUpdatePet();
   const deletePetMutation = useDeletePet();
-  
+
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
 

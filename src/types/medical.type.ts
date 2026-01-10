@@ -23,6 +23,14 @@ export const MedicalRecordFormData = z.object({
 
 export type MedicalRecordFormData = z.infer<typeof MedicalRecordFormData>;
 
+export type PrescriptionItem = {
+  idSanPham: number;
+  maSanPham: string;
+  tenSanPham: string;
+  giaBan: string;
+  soLuong: number;
+};
+
 export type CreateMedicalRecordParams = {
   thoiGianKham: string; // ISO 8601 format: "2026-01-10T14:22:12.731Z"
   idThuCung: number;

@@ -55,7 +55,8 @@ const ManagerLayout = () => {
             <nav className='hidden items-center space-x-1 md:flex'>
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
+                const isActive =
+                  pathname === item.path || pathname.startsWith(item.path + '/') || pathname === '/manager';
 
                 return (
                   <Link

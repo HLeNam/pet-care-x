@@ -19,14 +19,14 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
   if (!isOpen || !appointment) return null;
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Đã xác nhận':
-      case 'Đã Hoàn Thành':
+    switch (status.toLowerCase()) {
+      case 'đã xác nhận':
+      case 'đã hoàn thành':
         return 'bg-green-100 text-green-800';
-      case 'Chờ xác nhận':
-      case 'Đã Đặt':
+      case 'chờ xác nhận':
+      case 'đã đặt':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Đã hủy':
+      case 'đã hủy':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';

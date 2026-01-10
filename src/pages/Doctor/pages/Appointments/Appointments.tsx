@@ -6,6 +6,7 @@ import AppointmentEditModal from '~/pages/Doctor/components/AppointmentEditModal
 import AppointmentDeleteModal from '~/pages/Doctor/components/AppointmentDeleteModal';
 import { useDoctorAppointmentsList } from '~/hooks/useDoctorAppointmentsList';
 import useQueryParams from '~/hooks/useQueryParams';
+import { useUpdateAppointmentStatus, useDeleteAppointment } from '~/hooks/useAppointmentActions';
 import type { DoctorAppointmentItemResponse } from '~/types/employee.type';
 
 const ITEMS_PER_PAGE = 10;
@@ -18,6 +19,9 @@ const Appointments = () => {
     pageNo: currentPage,
     pageSize: ITEMS_PER_PAGE
   });
+
+  const updateStatusMutation = useUpdateAppointmentStatus();
+  const deleteAppointmentMutation = useDeleteAppointment();
 
   const [selectedAppointment, setSelectedAppointment] = useState<DoctorAppointmentItemResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,9 +66,19 @@ const Appointments = () => {
   };
 
   const handleSaveEdit = () => {
-    // TODO: Implement API call to save changes
-    console.log('Saving appointment:', editFormData);
-    handleCloseEditModal();
+    if (!editFormData) return;
+
+    updateStatusMutation.mutate(
+      {
+        idLichHen: editFormData.idLichHen,
+        trangThai: editFormData.trangThai
+      },
+      {
+        onSuccess: () => {
+          handleCloseEditModal();
+        }
+      }
+    );
   };
 
   const handleDelete = (appointment: DoctorAppointmentItemResponse) => {
@@ -73,10 +87,19 @@ const Appointments = () => {
   };
 
   const handleConfirmDelete = () => {
-    // TODO: Implement API call to delete appointment
-    console.log('Deleting appointment:', appointmentToDelete);
-    setIsDeleteModalOpen(false);
-    setAppointmentToDelete(null);
+    if (!appointmentToDelete) return;
+
+    deleteAppointmentMutation.mutate(
+      {
+        idLichHen: appointmentToDelete.idLichHen
+      },
+      {
+        onSuccess: () => {
+          setIsDeleteModalOpen(false);
+          setAppointmentToDelete(null);
+        }
+      }
+    );
   };
 
   const handleCancelDelete = () => {
@@ -85,14 +108,14 @@ const Appointments = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Đã xác nhận':
-      case 'Đã Hoàn Thành':
+    switch (status.toLowerCase()) {
+      case 'đã xác nhận':
+      case 'đã hoàn thành':
         return 'bg-green-100 text-green-800';
-      case 'Chờ xác nhận':
-      case 'Đã Đặt':
+      case 'chờ xác nhận':
+      case 'đã đặt':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Đã hủy':
+      case 'đã hủy':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';

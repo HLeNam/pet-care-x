@@ -12,7 +12,7 @@ import {
   saveRefreshTokenToLocalStorage
 } from '~/utils/auth';
 import config from '~/constants/config';
-import { isAxiosUnauthorizedError, isExpiredTokenError } from '~/utils/utils';
+import { isAxiosUnauthorizedError } from '~/utils/utils';
 import type { AuthUser } from '~/types/user.type';
 
 class Http {
@@ -29,7 +29,8 @@ class Http {
       timeout: 10000, // 10 seconds timeout
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      withCredentials: true // Enable sending cookies with requests
     });
 
     this.instance.interceptors.request.use(
@@ -59,7 +60,8 @@ class Http {
           const profile: AuthUser = {
             idAccount: data.idAccount,
             email: data.email,
-            userId: data.userId
+            userId: data.userId,
+            roles: data.roles.map((role) => role.roleName)
           };
 
           // Save access token to local storage
@@ -80,7 +82,7 @@ class Http {
           url = url.startsWith('/') ? url : `/${url}`;
 
           // Xử lý token hết hạn
-          if (isAxiosUnauthorizedError(error) && isExpiredTokenError(error) && url !== '/refresh-token') {
+          if (isAxiosUnauthorizedError(error) && url !== '/auth/refresh') {
             this.refreshTokenRequest =
               this.refreshTokenRequest ||
               this.handleRefreshToken().finally(() => {
@@ -134,13 +136,20 @@ class Http {
 
   private handleRefreshToken = async () => {
     return this.instance
-      .post<RefreshTokenResponse>('/refresh-token', {
-        refresh_token: this.refreshToken
-      })
+      .post<RefreshTokenResponse>('/auth/refresh', {})
       .then((res) => {
         const data = res.data;
         this.accessToken = data.accessToken || '';
         saveAccessTokenToLocalStorage(this.accessToken);
+
+        const profile: AuthUser = {
+          idAccount: data.idAccount,
+          email: data.email,
+          userId: data.userId,
+          roles: data.roles.map((role) => role.roleName)
+        };
+        saveProfileToLocalStorage(profile);
+
         return this.accessToken;
       })
       .catch((error) => {

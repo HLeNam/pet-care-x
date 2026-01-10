@@ -3,11 +3,12 @@ import StaffLayout from '~/layouts/StaffLayout';
 import PetLookup from '~/pages/Staff/pages/PetLookup';
 import CreateAppointment from '~/pages/Staff/pages/CreateAppointment';
 import type { AppRouteObject } from '~/types/route.type';
+import withStaffGuard from '~/components/StaffGuard/WithStaffGuard';
 
 const staffRoutes: AppRouteObject[] = [
   {
     path: '/staff',
-    element: <StaffLayout />,
+    Component: withStaffGuard(StaffLayout),
     children: [
       {
         index: true,

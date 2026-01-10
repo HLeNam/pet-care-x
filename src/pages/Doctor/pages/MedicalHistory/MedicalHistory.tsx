@@ -1,4 +1,4 @@
-import { History as HistoryIcon, FileText, Calendar } from 'lucide-react';
+import { History as HistoryIcon, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
 import type { MedicalRecord } from '~/types/medical.type';

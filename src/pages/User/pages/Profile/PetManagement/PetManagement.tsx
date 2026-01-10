@@ -49,7 +49,7 @@ const PetManagement = () => {
           gender: formData.gender,
           birth_date: formData.birth_date,
           health_status: formData.health_status,
-          owner_id: profile?._id ? Number(profile._id) : 0,
+          owner_id: profile!.idAccount,
           pet_id: 0,
           pet_code: ''
         });
@@ -61,7 +61,7 @@ const PetManagement = () => {
           gender: selectedPet.gender,
           birth_date: selectedPet.birth_date,
           health_status: selectedPet.health_status,
-          owner_id: profile?._id ? Number(profile._id) : 0,
+          owner_id: profile!.idAccount,
           pet_id: 0,
           pet_code: ''
         });

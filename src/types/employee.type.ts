@@ -31,3 +31,44 @@ export type DoctorAvailableListResponse = {
   totalElements: number;
   items: DoctorAvailableItemResponse[];
 };
+
+export type GetDoctorScheduleParams = {
+  idBacSi: number;
+  idChiNhanh: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorScheduleTimeSlot = {
+  gioBatDau: string;
+  gioKetThuc: string;
+  available: boolean;
+};
+
+export type DoctorScheduleItemResponse = {
+  date: string;
+  timeSlots: DoctorScheduleTimeSlot[];
+};
+
+export type DoctorScheduleListResponse = {
+  items: DoctorScheduleItemResponse[];
+};
+
+export type GetDoctorsByBranchParams = {
+  idChiNhanh: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type DoctorByBranchItemResponse = {
+  idBacSi: number;
+  tenBacSi: string;
+};
+
+export type DoctorsByBranchListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: DoctorByBranchItemResponse[];
+};

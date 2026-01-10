@@ -85,15 +85,13 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
-            <div className='w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl'>
+            <div className='max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl'>
                 {/* Header */}
                 <div className='sticky top-0 flex items-center justify-between border-b bg-white p-6'>
-                    <h2 className='text-xl font-semibold text-gray-800'>
-                        {mode === 'create' ? 'Add New Pet' : 'Edit Pet'}
-                    </h2>
+                    <h2 className='text-xl font-semibold text-gray-800'>{mode === 'create' ? 'Add New Pet' : 'Edit Pet'}</h2>
                     <button
                         onClick={onClose}
-                        className='rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 cursor-pointer'
+                        className='cursor-pointer rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
                     >
                         <X className='h-5 w-5' />
                     </button>
@@ -111,9 +109,9 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                                 type='text'
                                 value={formData.name}
                                 onChange={(e) => handleChange('name', e.target.value)}
-                                className={`w-full rounded-lg border px-4 py-2.5 focus:outline-none focus:ring-2 ${errors.name
-                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-gray-300 focus:border-lime-500 focus:ring-lime-200'
+                                className={`w-full rounded-lg border px-4 py-2.5 focus:ring-2 focus:outline-none ${errors.name
+                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                        : 'border-gray-300 focus:border-lime-500 focus:ring-lime-200'
                                     }`}
                                 placeholder='e.g., Milo'
                             />
@@ -129,7 +127,7 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                                 type='text'
                                 value={formData.species}
                                 onChange={(e) => handleChange('species', e.target.value)}
-                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-200'
+                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none'
                                 placeholder='e.g., Dog, Cat, Bird'
                             />
                             {errors.species && <p className='mt-1 text-sm text-red-600'>{errors.species}</p>}
@@ -144,9 +142,9 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                                 type='text'
                                 value={formData.breed}
                                 onChange={(e) => handleChange('breed', e.target.value)}
-                                className={`w-full rounded-lg border px-4 py-2.5 focus:outline-none focus:ring-2 ${errors.breed
-                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-gray-300 focus:border-lime-500 focus:ring-lime-200'
+                                className={`w-full rounded-lg border px-4 py-2.5 focus:ring-2 focus:outline-none ${errors.breed
+                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                        : 'border-gray-300 focus:border-lime-500 focus:ring-lime-200'
                                     }`}
                                 placeholder='e.g., Golden Retriever'
                             />
@@ -161,7 +159,7 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                             <select
                                 value={formData.gender}
                                 onChange={(e) => handleChange('gender', e.target.value)}
-                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-200'
+                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none'
                             >
                                 <option value='Male'>Male</option>
                                 <option value='Female'>Female</option>
@@ -190,7 +188,7 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                                 value={formData.health_status}
                                 onChange={(e) => handleChange('health_status', e.target.value)}
                                 rows={3}
-                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-200'
+                                className='w-full rounded-lg border border-gray-300 px-4 py-2.5 focus:border-lime-500 focus:ring-2 focus:ring-lime-200 focus:outline-none'
                                 placeholder='Any medical conditions, allergies, or important notes...'
                             />
                         </div>
@@ -201,14 +199,14 @@ const PetFormModal = ({ isOpen, onClose, onSubmit, pet, mode }: PetFormModalProp
                         <button
                             type='button'
                             onClick={onClose}
-                            className='flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 cursor-pointer'
+                            className='flex-1 cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
                             disabled={isSubmitting}
                         >
                             Cancel
                         </button>
                         <button
                             type='submit'
-                            className='flex-1 rounded-lg bg-lime-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer'
+                            className='flex-1 cursor-pointer rounded-lg bg-lime-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lime-700 disabled:cursor-not-allowed disabled:opacity-50'
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? 'Saving...' : mode === 'create' ? 'Add Pet' : 'Save Changes'}

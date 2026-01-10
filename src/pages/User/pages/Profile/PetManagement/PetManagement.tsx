@@ -1,20 +1,18 @@
 import { useState } from 'react';
-import { usePetManagement } from '~/hooks/usePetManagement';
+import { usePetList } from '~/hooks/usePetManagement';
 import type { Pet, PetFormInput } from '~/types/pet.type';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import PetCard from './components/PetCard';
 import PetFormModal from './components/PetFormModal';
 import { Plus } from 'lucide-react';
-import { useAppContext } from '~/contexts';
 
 type ModalMode = 'create' | 'edit' | 'delete' | null;
 
 const PetManagement = () => {
-  const { pets, isLoading, createPet, updatePet, deletePet } = usePetManagement();
+  const { pets, isLoading } = usePetList({ pageNo: 1, pageSize: 100 });
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { profile } = useAppContext();
 
   const handleOpenCreateModal = () => {
     setSelectedPet(null);
@@ -41,31 +39,13 @@ const PetManagement = () => {
 
   const handleSubmitForm = async (formData: PetFormInput) => {
     try {
-      if (modalMode === 'create') {
-        await createPet({
-          name: formData.name,
-          species: formData.species,
-          breed: formData.breed,
-          gender: formData.gender,
-          birth_date: formData.birth_date,
-          health_status: formData.health_status,
-          owner_id: profile!.idAccount,
-          pet_id: 0,
-          pet_code: ''
-        });
-      } else if (modalMode === 'edit' && selectedPet) {
-        await updatePet({
-          name: selectedPet.name,
-          species: selectedPet.species,
-          breed: selectedPet.breed,
-          gender: selectedPet.gender,
-          birth_date: selectedPet.birth_date,
-          health_status: selectedPet.health_status,
-          owner_id: profile!.idAccount,
-          pet_id: 0,
-          pet_code: ''
-        });
-      }
+      // TODO: Implement pet create/update mutations
+      console.log('Pet form submitted:', formData);
+      console.log('Mode:', modalMode);
+      console.log('Selected pet:', selectedPet);
+
+      // For now, just close the modal
+      handleCloseModal();
     } catch (error) {
       console.error('Failed to submit pet form:', error);
       throw error;
@@ -77,7 +57,10 @@ const PetManagement = () => {
 
     setIsDeleting(true);
     try {
-      await deletePet(selectedPet.pet_id);
+      // TODO: Implement pet delete mutation
+      console.log('Deleting pet:', selectedPet.pet_id);
+
+      // For now, just close the modal
       handleCloseModal();
     } catch (error) {
       console.error('Failed to delete pet:', error);

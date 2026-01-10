@@ -1,40 +1,31 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, User, Plus, PawPrint } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, PawPrint, ChevronLeft, ChevronRight } from 'lucide-react';
 import BookingModal from './components/BookingModal';
-import type { Appointment } from '~/types/booking.type';
+import { useCustomerAppointmentList } from '~/hooks/useAppointmentActions';
 
 const Booking = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    // Mock data
-    {
-      appointment_id: 1,
-      doctor_id: 1,
-      pet_id: 1,
-      customer_id: 1,
-      branch_id: 1,
-      appointment_time: '2026-01-15T10:00:00',
-      status: 'Booked',
-      pet_name: 'Milo',
-      doctor_name: 'BS. Nguyễn Văn A',
-      branch_name: 'Chi nhánh Quận 1'
-    }
-  ]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
-  const handleBookingSuccess = (newAppointment: Appointment) => {
-    setAppointments([newAppointment, ...appointments]);
-    setIsModalOpen(false);
+  const { appointments, pagination, isLoading, isError, refetch } = useCustomerAppointmentList({
+    pageNo: currentPage,
+    pageSize
+  });
+
+  const handleBookingSuccess = () => {
+    refetch();
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Booked':
+      case 'Đã đặt':
         return 'bg-green-100 text-green-800';
-      case 'Processing':
+      case 'Đang xử lý':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Cancelled':
+      case 'Đã hủy':
         return 'bg-red-100 text-red-800';
-      case 'Completed':
+      case 'Hoàn thành':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -73,92 +64,182 @@ const Booking = () => {
           </button>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className='flex items-center justify-center py-12'>
+            <div className='h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent'></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {isError && (
+          <div className='rounded-lg bg-red-50 p-6 text-center'>
+            <p className='text-red-700'>Failed to load appointments. Please try again.</p>
+            <button
+              onClick={() => refetch()}
+              className='mt-4 rounded-lg bg-red-600 px-6 py-2 text-white transition-colors hover:bg-red-700'
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Appointments List */}
-        <div className='space-y-4'>
-          {appointments.length === 0 ? (
-            <div className='rounded-lg bg-white p-12 text-center shadow'>
-              <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
-                <Calendar className='h-8 w-8 text-gray-400' />
+        {!isLoading && !isError && (
+          <div className='space-y-4'>
+            {appointments.length === 0 ? (
+              <div className='rounded-lg bg-white p-12 text-center shadow'>
+                <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
+                  <Calendar className='h-8 w-8 text-gray-400' />
+                </div>
+                <h3 className='mb-2 text-lg font-semibold text-gray-900'>No Appointments</h3>
+                <p className='mb-6 text-gray-600'>
+                  You have no appointments yet. Please book an appointment for your pet
+                </p>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className='inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white transition-all hover:bg-orange-600'
+                >
+                  <Plus className='h-5 w-5' />
+                  Book new appointment
+                </button>
               </div>
-              <h3 className='mb-2 text-lg font-semibold text-gray-900'>No Appointments</h3>
-              <p className='mb-6 text-gray-600'>
-                You have no appointments yet. Please book an appointment for your pet
-              </p>
+            ) : (
+              appointments.map((appointment) => {
+                const { dateStr, timeStr } = formatDateTime(appointment.ngayHen);
+                return (
+                  <div
+                    key={appointment.idLichHen}
+                    className='rounded-lg bg-white p-6 shadow transition-shadow hover:shadow-md'
+                  >
+                    <div className='flex items-start justify-between'>
+                      <div className='flex-1 space-y-3'>
+                        {/* Pet Name */}
+                        <div className='flex items-center gap-2'>
+                          <div className='rounded-full bg-orange-100 p-2'>
+                            <PawPrint className='h-5 w-5 text-orange-600' />
+                          </div>
+                          <div>
+                            <p className='text-sm text-gray-500'>Pet</p>
+                            <p className='font-semibold text-gray-900'>{appointment.tenThuCung}</p>
+                          </div>
+                        </div>
+
+                        <div className='grid gap-4 sm:grid-cols-3'>
+                          {/* Date & Time */}
+                          <div className='flex items-center gap-2'>
+                            <Calendar className='mr-1 ml-2 h-5 w-5 text-gray-400' />
+                            <div>
+                              <p className='text-sm text-gray-500'>Time</p>
+                              <p className='font-medium text-gray-900'>{dateStr}</p>
+                              <p className='flex items-center gap-1 text-sm text-gray-600'>
+                                <Clock className='h-4 w-4' />
+                                {timeStr}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Doctor */}
+                          <div className='flex items-center gap-2'>
+                            <User className='h-5 w-5 text-gray-400' />
+                            <div>
+                              <p className='text-sm text-gray-500'>Doctor</p>
+                              <p className='font-medium text-gray-900'>{appointment.tenBacSi}</p>
+                            </div>
+                          </div>
+
+                          {/* Branch */}
+                          <div className='flex items-center gap-2'>
+                            <MapPin className='h-5 w-5 text-gray-400' />
+                            <div>
+                              <p className='text-sm text-gray-500'>Branch</p>
+                              <p className='font-medium text-gray-900'>{appointment.tenChiNhanh}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <span
+                        className={`ml-4 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(appointment.trangThai)}`}
+                      >
+                        {appointment.trangThai}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && !isError && appointments.length > 0 && pagination.totalPage > 1 && (
+          <div className='mt-6 flex items-center justify-between rounded-lg bg-white px-6 py-4 shadow'>
+            <div className='text-sm text-gray-600'>
+              Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, pagination.totalElements)}{' '}
+              of {pagination.totalElements} results
+            </div>
+
+            <div className='flex items-center gap-2'>
+              {/* Previous Button */}
               <button
-                onClick={() => setIsModalOpen(true)}
-                className='inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white transition-all hover:bg-orange-600'
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className='flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
               >
-                <Plus className='h-5 w-5' />
-                Book new appointment
+                <ChevronLeft className='h-4 w-4' />
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className='flex items-center gap-1'>
+                {Array.from({ length: pagination.totalPage }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  const showPage =
+                    page === 1 || page === pagination.totalPage || (page >= currentPage - 1 && page <= currentPage + 1);
+
+                  const showEllipsis =
+                    (page === 2 && currentPage > 3) ||
+                    (page === pagination.totalPage - 1 && currentPage < pagination.totalPage - 2);
+
+                  if (showEllipsis) {
+                    return (
+                      <span key={page} className='px-2 text-gray-500'>
+                        ...
+                      </span>
+                    );
+                  }
+
+                  if (!showPage) return null;
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-10 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${currentPage === page
+                        ? 'bg-orange-500 text-white'
+                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(pagination.totalPage, prev + 1))}
+                disabled={currentPage === pagination.totalPage}
+                className='flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
+              >
+                Next
+                <ChevronRight className='h-4 w-4' />
               </button>
             </div>
-          ) : (
-            appointments.map((appointment) => {
-              const { dateStr, timeStr } = formatDateTime(appointment.appointment_time);
-              return (
-                <div
-                  key={appointment.appointment_id}
-                  className='rounded-lg bg-white p-6 shadow transition-shadow hover:shadow-md'
-                >
-                  <div className='flex items-start justify-between'>
-                    <div className='flex-1 space-y-3'>
-                      {/* Pet Name */}
-                      <div className='flex items-center gap-2'>
-                        <div className='rounded-full bg-orange-100 p-2'>
-                          <PawPrint className='h-5 w-5 text-orange-600' />
-                        </div>
-                        <div>
-                          <p className='text-sm text-gray-500'>Pet</p>
-                          <p className='font-semibold text-gray-900'>{appointment.pet_name}</p>
-                        </div>
-                      </div>
-
-                      <div className='grid gap-4 sm:grid-cols-3'>
-                        {/* Date & Time */}
-                        <div className='flex items-center gap-2'>
-                          <Calendar className='mr-1 ml-2 h-5 w-5 text-gray-400' />
-                          <div>
-                            <p className='text-sm text-gray-500'>Time</p>
-                            <p className='font-medium text-gray-900'>{dateStr}</p>
-                            <p className='flex items-center gap-1 text-sm text-gray-600'>
-                              <Clock className='h-4 w-4' />
-                              {timeStr}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Doctor */}
-                        <div className='flex items-center gap-2'>
-                          <User className='h-5 w-5 text-gray-400' />
-                          <div>
-                            <p className='text-sm text-gray-500'>Doctor</p>
-                            <p className='font-medium text-gray-900'>{appointment.doctor_name}</p>
-                          </div>
-                        </div>
-
-                        {/* Branch */}
-                        <div className='flex items-center gap-2'>
-                          <MapPin className='h-5 w-5 text-gray-400' />
-                          <div>
-                            <p className='text-sm text-gray-500'>Branch</p>
-                            <p className='font-medium text-gray-900'>{appointment.branch_name}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status Badge */}
-                    <span
-                      className={`ml-4 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(appointment.status)}`}
-                    >
-                      {appointment.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Booking Modal */}

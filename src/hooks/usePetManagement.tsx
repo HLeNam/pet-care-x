@@ -1,201 +1,63 @@
-import { useState, useCallback } from 'react';
-import type { Pet } from '~/types/pet.type';
+import { useQuery } from '@tanstack/react-query';
+import petApi from '~/apis/pet.api';
+import { useAppContext } from '~/contexts/app/app.context';
+import type { GetPetsByOwnerIdItemResponse, Pet } from '~/types/pet.type';
 
-interface UsePetManagementReturn {
-    pets: Pet[];
-    isLoading: boolean;
-    error: string | null;
-    createPet: (pet: Pet) => Promise<void>;
-    updatePet: (pet: Pet) => Promise<void>;
-    deletePet: (petId: number) => Promise<void>;
-    refreshPets: () => Promise<void>;
+interface UsePetListParams {
+    pageNo?: number;
+    pageSize?: number;
 }
 
-export const usePetManagement = (): UsePetManagementReturn => {
-    // Mock data for now
-    const [pets, setPets] = useState<Pet[]>([
-        {
-            pet_id: 1,
-            pet_code: 'PET-001',
-            name: 'Milo',
-            species: 'Dog',
-            breed: 'Golden Retriever',
-            gender: 'Male',
-            birth_date: '2021-05-12',
-            health_status: 'Healthy',
-            owner_id: 101
-        },
-        {
-            pet_id: 2,
-            pet_code: 'PET-002',
-            name: 'Luna',
-            species: 'Cat',
-            breed: 'British Shorthair',
-            gender: 'Female',
-            birth_date: '2022-01-20',
-            health_status: 'Vaccinated',
-            owner_id: 102
-        },
-        {
-            pet_id: 3,
-            pet_code: 'PET-003',
-            name: 'Coco',
-            species: 'Bird',
-            breed: 'Parrot',
-            gender: 'Male',
-            birth_date: '2020-08-05',
-            health_status: 'Healthy',
-            owner_id: 101
-        },
-        {
-            pet_id: 4,
-            pet_code: 'PET-004',
-            name: 'Max',
-            species: 'Dog',
-            breed: 'Poodle',
-            gender: 'Male',
-            birth_date: '2019-11-30',
-            health_status: 'Needs dental check',
-            owner_id: 103
-        },
-        {
-            pet_id: 5,
-            pet_code: 'PET-005',
-            name: 'Nami',
-            species: 'Cat',
-            gender: 'Female',
-            health_status: 'Under treatment',
-            owner_id: 104,
-            breed: '',
-            birth_date: ''
-        }
-    ]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+/**
+ * Hook to get pets by owner ID
+ */
+export const usePetList = ({ pageNo = 1, pageSize = 20 }: UsePetListParams = {}) => {
+    const { profile } = useAppContext();
 
-    const refreshPets = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/pets', {
-            //   method: 'GET',
-            //   headers: {
-            //     'Authorization': `Bearer ${token}`,
-            //     'Content-Type': 'application/json'
-            //   }
-            // });
-            // if (!response.ok) throw new Error('Failed to fetch pets');
-            // const data = await response.json();
-            // setPets(data.pets);
+    const query = useQuery({
+        queryKey: ['pets', 'by-owner', profile!.idAccount, pageNo, pageSize],
+        queryFn: () =>
+            petApi.getPetByOwnerId({
+                idKhachHang: profile!.idAccount,
+                pageNo,
+                pageSize
+            }),
+        enabled: !!profile?.idAccount,
+        staleTime: 1000 * 60 * 5 // 5 minutes
+    });
 
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 500));
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch pets');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    // Create a new pet
-    const createPet = useCallback(async (petData: Pet) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/pets', {
-            //   method: 'POST',
-            //   headers: {
-            //     'Authorization': `Bearer ${token}`,
-            //     'Content-Type': 'application/json'
-            //   },
-            //   body: JSON.stringify(petData)
-            // });
-            // if (!response.ok) throw new Error('Failed to create pet');
-            // const data = await response.json();
-            // setPets((prev) => [...prev, data.pet]);
-
-            // Mock implementation
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            const newPet: Pet = {
-                ...petData,
-                pet_id: Date.now(),
-                owner_id: 1
-            };
-            setPets((prev) => [...prev, newPet]);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create pet');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    // Update an existing pet
-    const updatePet = useCallback(async (petData: Pet) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            // TODO: Replace with actual API call
-            // const response = await fetch(`/api/pets/${petData.id}`, {
-            //   method: 'PUT',
-            //   headers: {
-            //     'Authorization': `Bearer ${token}`,
-            //     'Content-Type': 'application/json'
-            //   },
-            //   body: JSON.stringify(petData)
-            // });
-            // if (!response.ok) throw new Error('Failed to update pet');
-            // const data = await response.json();
-            // setPets((prev) => prev.map((pet) => (pet.id === petData.id ? data.pet : pet)));
-
-            // Mock implementation
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            setPets((prev) => prev.map((pet) => (pet.pet_id === petData.pet_id ? { ...pet, ...petData } : pet)));
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to update pet');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    // Delete a pet
-    const deletePet = useCallback(async (petId: number) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            // TODO: Replace with actual API call
-            // const response = await fetch(`/api/pets/${petId}`, {
-            //   method: 'DELETE',
-            //   headers: {
-            //     'Authorization': `Bearer ${token}`,
-            //     'Content-Type': 'application/json'
-            //   }
-            // });
-            // if (!response.ok) throw new Error('Failed to delete pet');
-            // setPets((prev) => prev.filter((pet) => pet.id !== petId));
-
-            // Mock implementation
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            setPets((prev) => prev.filter((pet) => pet.pet_id !== petId));
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to delete pet');
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    const allPets: GetPetsByOwnerIdItemResponse[] = query.data?.data?.data?.items || [];
+    const pets: Pet[] = allPets.map((item) => ({
+        pet_id: item.idThuCung,
+        pet_code: item.maThuCung,
+        name: item.ten,
+        species: '', // API không trả về, để trống
+        breed: '', // API không trả về, để trống
+        gender: 'Male', // API không trả về, giá trị mặc định
+        birth_date: '', // API không trả về, để trống
+        health_status: '', // API không trả về, để trống
+        owner_id: profile!.idAccount
+    }));
 
     return {
         pets,
-        isLoading,
-        error,
-        createPet,
-        updatePet,
-        deletePet,
-        refreshPets
+        pagination: {
+            pageNo: query.data?.data?.data?.pageNo || 1,
+            pageSize: query.data?.data?.data?.pageSize || pageSize,
+            totalPage: query.data?.data?.data?.totalPage || 0,
+            totalElements: query.data?.data?.data?.totalElements || 0
+        },
+        isLoading: query.isLoading,
+        error: query.error ? String(query.error) : null,
+        refetch: query.refetch
     };
+};
+
+export const usePetDetail = (petId: number | null) => {
+    return useQuery({
+        queryKey: ['pet-detail', petId],
+        queryFn: () => petApi.getPetDetails({ idThuCung: petId! }),
+        enabled: !!petId,
+        staleTime: 1000 * 60 * 5 // 5 minutes
+    });
 };

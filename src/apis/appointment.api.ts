@@ -1,7 +1,20 @@
-import type { DeleteAppointmentParams, UpdateAppointmentStatusPayload } from '~/types/appointment.type';
+import type {
+  CustomerAppointmentListResponse,
+  DeleteAppointmentParams,
+  GetCustomerAppointmentsParams,
+  UpdateAppointmentStatusPayload
+} from '~/types/appointment.type';
 import type { CreateAppointmentRequest } from '~/types/employee.type';
 import type { ResponseApi } from '~/types/utils.type';
 import http from '~/utils/http';
+
+export const getCustomerAppointments = async (params: GetCustomerAppointmentsParams) => {
+  return http.get<ResponseApi<CustomerAppointmentListResponse>>(`http://localhost:9090/api/lichhen/khachhang`, {
+    params: {
+      ...params
+    }
+  });
+};
 
 const createAppointment = async (body: CreateAppointmentRequest) => {
   return http.post<ResponseApi<unknown>>(`http://localhost:9090/api/lichhen/tao`, body);
@@ -16,6 +29,7 @@ const deleteAppointment = async (params: DeleteAppointmentParams) => {
 };
 
 const appointmentApi = {
+  getCustomerAppointments,
   createAppointment,
   updateAppointmentStatus,
   deleteAppointment

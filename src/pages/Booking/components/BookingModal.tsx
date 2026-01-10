@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, User, Stethoscope } from 'lucide-react';
+import { toast } from 'react-toastify';
 import type { Appointment, BookingForm } from '~/types/booking.type';
+import { BookingFormSchema } from '~/types/booking.type';
 import { useBranchList } from '~/hooks/useBranchList';
-import { usePetManagement } from '~/hooks/usePetManagement';
 import { useDoctorsAvailable } from '~/hooks/useDoctorsAvailable';
 import { useCreateAppointment } from '~/hooks/useCreateAppointment';
 import { useAppContext } from '~/contexts';
+import type { Pet } from '~/types/pet.type';
+import { usePetList } from '~/hooks/usePetManagement';
 
 interface BookingModalProps {
   onClose: () => void;
@@ -21,7 +24,7 @@ interface BookingModalProps {
 const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) => {
   const { profile } = useAppContext();
   const { data: branches = [], isLoading: isLoadingBranches } = useBranchList();
-  const { pets, isLoading: isLoadingPets } = usePetManagement();
+  const { pets, isLoading: isLoadingPets } = usePetList({ pageNo: 1, pageSize: 100 });
   const createAppointmentMutation = useCreateAppointment();
 
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
@@ -74,6 +77,15 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
 
   // No need for separate effect to fetch available doctors - handled by hook above
 
+  // Show notification when no doctors are available
+  useEffect(() => {
+    if (formData.booking_date && formData.booking_time && formData.branch_id && !isLoadingDoctors) {
+      if (availableDoctors.length === 0) {
+        toast.warning('No doctors are available for the selected time. Please choose a different time slot.');
+      }
+    }
+  }, [availableDoctors, isLoadingDoctors, formData.booking_date, formData.booking_time, formData.branch_id]);
+
   const handleInputChange = (field: keyof BookingForm, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
@@ -83,26 +95,26 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof BookingForm, string>> = {};
+    const result = BookingFormSchema.safeParse({
+      branch_id: formData.branch_id || 0,
+      pet_id: formData.pet_id || 0,
+      doctor_id: formData.doctor_id || 0,
+      booking_date: formData.booking_date || '',
+      booking_time: formData.booking_time || ''
+    });
 
-    if (!formData.branch_id) {
-      newErrors.branch_id = 'Please select a branch';
-    }
-    if (!formData.pet_id) {
-      newErrors.pet_id = 'Please select a pet';
-    }
-    if (!formData.booking_date) {
-      newErrors.booking_date = 'Please select a date';
-    }
-    if (!formData.booking_time) {
-      newErrors.booking_time = 'Please select a time';
-    }
-    if (!formData.doctor_id) {
-      newErrors.doctor_id = 'Please select a doctor';
+    if (!result.success) {
+      const newErrors: Partial<Record<keyof BookingForm, string>> = {};
+      result.error.errors.forEach((error) => {
+        const field = error.path[0] as keyof BookingForm;
+        newErrors[field] = error.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,7 +126,7 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
 
     // Get related data
     const selectedBranch = branches.find((b) => b.branch_id === formData.branch_id);
-    const selectedPet = pets.find((p) => p.pet_id === formData.pet_id);
+    const selectedPet = pets.find((p: Pet) => p.pet_id === formData.pet_id);
     const selectedDoctor = availableDoctors.find((d) => d.employee_id === formData.doctor_id);
 
     if (!selectedBranch || !selectedPet || !selectedDoctor || !formData.booking_time) {
@@ -123,18 +135,6 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
 
     // Call API to create appointment
     try {
-      // await createAppointmentMutation.mutateAsync({
-      //   idChiNhanh: 1,
-      //   tenChiNhanh: 'Chi Nhánh Hà Nội',
-      //   idKhachHang: 1,
-      //   tenKhachHang: 'Nguyễn Văn A',
-      //   idThuCung: 2,
-      //   tenThuCung: 'Mèo Mimi',
-      //   ngayHen: '2026-01-13',
-      //   gioBatDau: '09:30',
-      //   idNhanVien: 11,
-      //   tenBacSi: 'Bac si sieu cap'
-      // });
       await createAppointmentMutation.mutateAsync({
         idChiNhanh: formData.branch_id!,
         tenChiNhanh: selectedBranch.name,
@@ -150,7 +150,7 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
 
       // Create appointment object for UI update
       const newAppointment: Appointment = {
-        appointment_id: Date.now(), // Use timestamp as mock ID since API doesn't return it
+        appointment_id: Date.now(),
         doctor_id: formData.doctor_id!,
         pet_id: formData.pet_id!,
         customer_id: selectedPet.owner_id || 1,
@@ -162,10 +162,19 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
         branch_name: selectedBranch.name
       };
 
+      // Show success toast
+      toast.success('Appointment created successfully!');
+
+      // Call onSuccess callback and close modal
       onSuccess(newAppointment);
-    } catch (error) {
+      onClose();
+    } catch (error: any) {
       console.error('Failed to create appointment:', error);
-      // TODO: Show error message to user
+
+      // Show error toast with details
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Failed to create appointment. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
@@ -226,9 +235,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                   }`}
               >
                 <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select Pet'}</option>
-                {pets.map((pet) => (
+                {pets.map((pet: Pet) => (
                   <option key={pet.pet_id} value={pet.pet_id}>
-                    {pet.name} - {pet.species} ({pet.breed})
+                    {pet.name} - {pet.pet_code}
                   </option>
                 ))}
               </select>

@@ -5,7 +5,6 @@ import {
   User,
   Phone,
   Calendar,
-  Stethoscope,
   Tag,
   CalendarDays,
   HeartPulse,
@@ -111,17 +110,51 @@ const mockMedicalRecords: MedicalRecord[] = [
 ];
 
 const PetRecords = () => {
+  const [phoneInput, setPhoneInput] = useState('');
   const [selectedOwner, setSelectedOwner] = useState<number | null>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [isNewRecordModalOpen, setIsNewRecordModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const selectedOwnerData = mockOwners.find((o) => o.id === selectedOwner);
   const filteredPets = mockPets.filter((p) => p.owner_id === selectedOwner);
 
-  const handleOwnerChange = (ownerId: number | null) => {
-    setSelectedOwner(ownerId);
+  const handleSearch = async () => {
+    if (!phoneInput.trim()) {
+      alert('Please enter a phone number');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // TODO: Replace with actual API call
+      // const response = await api.searchOwnerByPhone(phoneInput);
+
+      // Mock API call - simulate finding owner
+      setTimeout(() => {
+        const owner = mockOwners.find((o) => o.phone === phoneInput);
+        if (owner) {
+          setSelectedOwner(owner.id);
+          setSelectedPet(null);
+        } else {
+          alert('No owner found with this phone number');
+          setSelectedOwner(null);
+          setSelectedPet(null);
+        }
+        setIsSearching(false);
+      }, 500);
+    } catch (error) {
+      console.error('Search error:', error);
+      alert('Error searching for owner');
+      setIsSearching(false);
+    }
+  };
+
+  const handleReset = () => {
+    setPhoneInput('');
+    setSelectedOwner(null);
     setSelectedPet(null);
   };
 
@@ -176,47 +209,80 @@ const PetRecords = () => {
 
       {/* Search Section */}
       <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-        <div className='grid gap-4 md:grid-cols-2'>
-          {/* Owner Selection */}
+        <div className='space-y-4'>
+          {/* Phone Number Search */}
           <div>
             <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700'>
               <Phone className='h-4 w-4' />
-              Select Owner (by Phone)
+              Search Owner by Phone Number
             </label>
-            <select
-              value={selectedOwner || ''}
-              onChange={(e) => handleOwnerChange(Number(e.target.value) || null)}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
-            >
-              <option value=''>-- Select Owner --</option>
-              {mockOwners.map((owner) => (
-                <option key={owner.id} value={owner.id}>
-                  {owner.name} - {owner.phone}
-                </option>
-              ))}
-            </select>
+            <div className='flex gap-2'>
+              <input
+                type='tel'
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder='Enter phone number (e.g., 0901234567)'
+                className='flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+              />
+              <button
+                onClick={handleSearch}
+                disabled={isSearching || !phoneInput.trim()}
+                className='flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300'
+              >
+                <Search className='h-4 w-4' />
+                {isSearching ? 'Searching...' : 'Search'}
+              </button>
+              {selectedOwner && (
+                <button
+                  onClick={handleReset}
+                  className='rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Pet Selection */}
-          <div>
-            <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700'>
-              <Tag className='h-4 w-4' />
-              Select Pet
-            </label>
-            <select
-              value={selectedPet?.pet_id || ''}
-              onChange={(e) => handlePetChange(Number(e.target.value) || null)}
-              disabled={!selectedOwner}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>-- Select Pet --</option>
-              {filteredPets.map((pet) => (
-                <option key={pet.pet_id} value={pet.pet_id}>
-                  {pet.name} - {pet.species}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Owner Info & Pet Selection */}
+          {selectedOwner && selectedOwnerData && (
+            <div className='rounded-lg border border-orange-200 bg-orange-50 p-4'>
+              <div className='mb-3 flex items-center gap-2'>
+                <User className='h-5 w-5 text-orange-600' />
+                <h3 className='font-semibold text-gray-900'>Owner Found</h3>
+              </div>
+              <div className='mb-4 grid gap-2 text-sm'>
+                <div className='flex items-center gap-2'>
+                  <span className='font-medium text-gray-700'>Name:</span>
+                  <span className='text-gray-900'>{selectedOwnerData.name}</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Phone className='h-4 w-4 text-gray-500' />
+                  <span className='font-medium text-gray-700'>Phone:</span>
+                  <span className='text-gray-900'>{selectedOwnerData.phone}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700'>
+                  <Tag className='h-4 w-4' />
+                  Select Pet
+                </label>
+                <select
+                  value={selectedPet?.pet_id || ''}
+                  onChange={(e) => handlePetChange(Number(e.target.value) || null)}
+                  className='w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+                >
+                  <option value=''>-- Select Pet --</option>
+                  {filteredPets.map((pet) => (
+                    <option key={pet.pet_id} value={pet.pet_id}>
+                      {pet.name} - {pet.species} - {pet.breed}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -388,7 +454,11 @@ const PetRecords = () => {
         <div className='rounded-lg border border-gray-200 bg-white py-16 text-center shadow-sm'>
           <Search className='mx-auto h-16 w-16 text-gray-400' />
           <h3 className='mt-4 text-lg font-medium text-gray-900'>No pet selected</h3>
-          <p className='mt-2 text-sm text-gray-500'>Please select an owner and a pet to view medical records</p>
+          <p className='mt-2 text-sm text-gray-500'>
+            {selectedOwner
+              ? 'Please select a pet to view medical records'
+              : 'Search for an owner by phone number to get started'}
+          </p>
         </div>
       )}
 

@@ -17,9 +17,9 @@ export const MedicalRecordSchema = z.object({
 export type MedicalRecord = z.infer<typeof MedicalRecordSchema>;
 
 export const MedicalRecordFormData = z.object({
-  symptoms: z.string(),
-  diagnosis: z.string(),
-  treatment: z.string(),
+  symptoms: z.string().nonempty('Symptoms are required'),
+  diagnosis: z.string().nonempty('Diagnosis is required'),
+  treatment: z.string().nonempty('Treatment is required'),
   prescriptions: z.string(),
   nextAppointment: z.string(),
   notes: z.string()

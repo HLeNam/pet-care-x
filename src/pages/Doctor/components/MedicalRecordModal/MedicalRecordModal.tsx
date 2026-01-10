@@ -1,6 +1,6 @@
 import { X, FileText, Calendar as CalendarIcon, Stethoscope, Pill } from 'lucide-react';
 import { useState } from 'react';
-import type { MedicalRecordFormData } from '~/types/medical.type';
+import { MedicalRecordFormData } from '~/types/medical.type';
 
 interface MedicalRecordModalProps {
     isOpen: boolean;
@@ -18,19 +18,33 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
         nextAppointment: '',
         notes: ''
     });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleChange = (field: keyof MedicalRecordFormData, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+        // Clear error for this field when user starts typing
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: '' }));
+        }
     };
 
     const handleSubmit = () => {
-        // Validate required fields
-        if (!formData.symptoms || !formData.diagnosis) {
-            alert('Vui lòng nhập triệu chứng và chẩn đoán');
+        // Validate using Zod schema
+        const result = MedicalRecordFormData.safeParse(formData);
+
+        if (!result.success) {
+            const newErrors: Record<string, string> = {};
+            result.error.errors.forEach((err) => {
+                if (err.path[0]) {
+                    newErrors[err.path[0] as string] = err.message;
+                }
+            });
+            setErrors(newErrors);
             return;
         }
-        onSave(formData);
-        // Reset form
+
+        onSave(result.data);
+        // Reset form and errors
         setFormData({
             symptoms: '',
             diagnosis: '',
@@ -39,6 +53,7 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
             nextAppointment: '',
             notes: ''
         });
+        setErrors({});
     };
 
     if (!isOpen) return null;
@@ -52,8 +67,8 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
                 {/* Modal Header */}
                 <div className='flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4'>
                     <div>
-                        <h2 className='text-2xl font-bold text-gray-900'>Tạo Bệnh Án Mới</h2>
-                        {petName && <p className='mt-1 text-sm text-gray-600'>Thú cưng: {petName}</p>}
+                        <h2 className='text-2xl font-bold text-gray-900'>Create new medical record</h2>
+                        {petName && <p className='mt-1 text-sm text-gray-600'>Pet: {petName}</p>}
                     </div>
                     <button
                         onClick={onClose}
@@ -70,47 +85,61 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
                         <div className='rounded-lg border border-gray-200 bg-orange-50 p-4'>
                             <h3 className='mb-4 flex items-center text-lg font-semibold text-gray-900'>
                                 <Stethoscope className='mr-2 h-5 w-5 text-orange-500' />
-                                Thông Tin Khám Bệnh
+                                Examination Information
                             </h3>
                             <div className='space-y-4'>
                                 {/* Symptoms */}
                                 <div>
                                     <label className='mb-1 block text-sm font-medium text-gray-700'>
-                                        Triệu Chứng <span className='text-red-500'>*</span>
+                                        Symptoms <span className='text-red-500'>*</span>
                                     </label>
                                     <textarea
                                         value={formData.symptoms}
                                         onChange={(e) => handleChange('symptoms', e.target.value)}
                                         rows={3}
-                                        placeholder='Mô tả các triệu chứng mà thú cưng đang gặp phải...'
-                                        className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+                                        placeholder='Describe the symptoms the pet is experiencing...'
+                                        className={`w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none ${errors.symptoms
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500/20'
+                                            }`}
                                     />
+                                    {errors.symptoms && <p className='mt-1 text-sm text-red-500'>{errors.symptoms}</p>}
                                 </div>
 
                                 {/* Diagnosis */}
                                 <div>
                                     <label className='mb-1 block text-sm font-medium text-gray-700'>
-                                        Chẩn Đoán <span className='text-red-500'>*</span>
+                                        Diagnosis <span className='text-red-500'>*</span>
                                     </label>
                                     <textarea
                                         value={formData.diagnosis}
                                         onChange={(e) => handleChange('diagnosis', e.target.value)}
                                         rows={3}
-                                        placeholder='Kết quả chẩn đoán bệnh...'
-                                        className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+                                        placeholder='Diagnosis results...'
+                                        className={`w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none ${errors.diagnosis
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500/20'
+                                            }`}
                                     />
+                                    {errors.diagnosis && <p className='mt-1 text-sm text-red-500'>{errors.diagnosis}</p>}
                                 </div>
 
                                 {/* Treatment */}
                                 <div>
-                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Phương Pháp Điều Trị</label>
+                                    <label className='mb-1 block text-sm font-medium text-gray-700'>
+                                        Treatment Methods <span className='text-red-500'>*</span>
+                                    </label>
                                     <textarea
                                         value={formData.treatment}
                                         onChange={(e) => handleChange('treatment', e.target.value)}
                                         rows={3}
-                                        placeholder='Các phương pháp điều trị được áp dụng...'
-                                        className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
+                                        placeholder='Treatment methods applied...'
+                                        className={`w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none ${errors.treatment
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500/20'
+                                            }`}
                                     />
+                                    {errors.treatment && <p className='mt-1 text-sm text-red-500'>{errors.treatment}</p>}
                                 </div>
                             </div>
                         </div>
@@ -119,17 +148,17 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
                         <div className='rounded-lg border border-gray-200 bg-blue-50 p-4'>
                             <h3 className='mb-4 flex items-center text-lg font-semibold text-gray-900'>
                                 <Pill className='mr-2 h-5 w-5 text-blue-500' />
-                                Đơn Thuốc
+                                Prescription
                             </h3>
                             <div className='space-y-4'>
                                 {/* Prescriptions */}
                                 <div>
-                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Danh Sách Thuốc</label>
+                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Medication List</label>
                                     <textarea
                                         value={formData.prescriptions}
                                         onChange={(e) => handleChange('prescriptions', e.target.value)}
                                         rows={4}
-                                        placeholder='Liệt kê các loại thuốc, liều lượng và cách dùng...'
+                                        placeholder='List medications, dosages, and usage instructions...'
                                         className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
                                     />
                                 </div>
@@ -140,12 +169,12 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
                         <div className='rounded-lg border border-gray-200 bg-green-50 p-4'>
                             <h3 className='mb-4 flex items-center text-lg font-semibold text-gray-900'>
                                 <CalendarIcon className='mr-2 h-5 w-5 text-green-500' />
-                                Tái Khám & Ghi Chú
+                                Follow-up & Notes
                             </h3>
                             <div className='space-y-4'>
                                 {/* Next Appointment */}
                                 <div>
-                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Ngày Tái Khám</label>
+                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Next Appointment Date</label>
                                     <input
                                         type='date'
                                         value={formData.nextAppointment}
@@ -156,12 +185,12 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
 
                                 {/* Notes */}
                                 <div>
-                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Ghi Chú Thêm</label>
+                                    <label className='mb-1 block text-sm font-medium text-gray-700'>Additional Notes</label>
                                     <textarea
                                         value={formData.notes}
                                         onChange={(e) => handleChange('notes', e.target.value)}
                                         rows={3}
-                                        placeholder='Các ghi chú bổ sung cho bệnh án...'
+                                        placeholder='Additional notes for the medical record...'
                                         className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none'
                                     />
                                 </div>
@@ -177,14 +206,14 @@ const MedicalRecordModal = ({ isOpen, petName, onClose, onSave }: MedicalRecordM
                             onClick={onClose}
                             className='rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
                         >
-                            Hủy
+                            Cancel
                         </button>
                         <button
                             onClick={handleSubmit}
                             className='flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600'
                         >
                             <FileText className='h-4 w-4' />
-                            Lưu Bệnh Án
+                            Save Medical Record
                         </button>
                     </div>
                 </div>

@@ -88,7 +88,8 @@ export const useRegisterForm = (): UseRegisterFormReturn => {
       const user: AuthUser = {
         idAccount: data.account.idAccount,
         email: data.account.email,
-        userId: data.idKhachHang
+        userId: data.idKhachHang,
+        roles: ['ROLE_CUSTOMER']
       };
 
       saveProfileToLocalStorage(user);

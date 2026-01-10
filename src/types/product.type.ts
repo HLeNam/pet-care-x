@@ -75,3 +75,13 @@ export type ProductListResponse = {
     items: ProductItemResponse[];
   };
 };
+
+export type MedicineItemResponse = Omit<ProductItemResponse, 'tonKho'>;
+
+export type MedicineListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: MedicineItemResponse[];
+};

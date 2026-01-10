@@ -22,7 +22,7 @@ const DoctorLayout = () => {
     },
     {
       path: '/doctor/pet-records',
-      label: 'Pet Records',
+      label: 'Pet Management',
       icon: FileText
     },
     {
@@ -67,9 +67,8 @@ const DoctorLayout = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                      isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
                   >
                     <Icon className='h-4 w-4' />
                     <span>{item.label}</span>
@@ -105,9 +104,8 @@ const DoctorLayout = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 ${
-                    isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
+                  className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                 >
                   <Icon className='h-4 w-4' />
                   <span>{item.label}</span>

@@ -1,80 +1,75 @@
-import { History as HistoryIcon, FileText, User, Calendar } from 'lucide-react';
+import { History as HistoryIcon, FileText, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
+import type { MedicalRecord } from '~/types/medical.type';
 
 // Temporary mock data
-const mockMedicalHistory = [
+const mockMedicalHistory: MedicalRecord[] = [
   {
     id: 1,
     date: '2025-12-20',
     petName: 'Milu',
-    ownerName: 'Nguyễn Văn A',
+    doctor: 'BS. Nguyễn Văn A',
     symptoms: 'Nôn mửa, tiêu chảy',
     diagnosis: 'Viêm dạ dày',
-    nextVisit: '2026-01-05'
+    treatment: 'Thuốc kháng sinh, chế độ ăn nhẹ',
+    cost: 250000,
+    prescriptions: ['Amoxicillin 500mg - 2 viên/ngày', 'Smecta - 3 gói/ngày', 'Thức ăn nhuyễn trong 3 ngày'],
+    nextAppointment: '2026-01-05',
+    notes: 'Theo dõi tình trạng tiêu hóa, nếu không cải thiện sau 3 ngày cần tái khám sớm'
   },
   {
     id: 2,
     date: '2025-12-18',
     petName: 'Lucky',
-    ownerName: 'Trần Thị B',
+    doctor: 'BS. Nguyễn Văn A',
     symptoms: 'Ho, sổ mũi',
     diagnosis: 'Cảm lạnh',
-    nextVisit: '2025-12-28'
+    treatment: 'Thuốc ho, giữ ấm',
+    cost: 150000,
+    prescriptions: ['Cough syrup - 5ml/lần, 3 lần/ngày', 'Vitamin C - 1 viên/ngày'],
+    nextAppointment: '2025-12-28',
+    notes: 'Giữ ấm, tránh gió lạnh'
   },
   {
     id: 3,
     date: '2025-12-15',
     petName: 'Bông',
-    ownerName: 'Lê Văn C',
+    doctor: 'BS. Nguyễn Văn A',
     symptoms: 'Ngứa, rụng lông',
     diagnosis: 'Viêm da dị ứng',
-    nextVisit: '2026-01-10'
+    treatment: 'Thuốc bôi, thay đổi thức ăn',
+    cost: 300000,
+    prescriptions: [
+      'Betamethasone cream - Bôi 2 lần/ngày',
+      'Cetirizine 10mg - 1 viên/ngày',
+      'Thức ăn chuyên dụng cho da nhạy cảm'
+    ],
+    nextAppointment: '2026-01-10',
+    notes: 'Kiểm tra phản ứng với thức ăn mới, tránh tiếp xúc với chất gây dị ứng'
   }
 ];
 
 const MedicalHistory = () => {
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
+
+  const handleOpenDetailModal = (record: MedicalRecord) => {
+    setSelectedRecord(record);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setTimeout(() => setSelectedRecord(null), 300);
+  };
+
   return (
     <div className='space-y-6'>
       {/* Page Header */}
       <div>
         <h1 className='text-2xl font-bold text-gray-900'>Medical History</h1>
         <p className='mt-1 text-sm text-gray-600'>List of medical records performed by you</p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className='grid gap-4 sm:grid-cols-3'>
-        <div className='rounded-lg border border-gray-200 bg-white p-4'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-lg bg-orange-50'>
-              <FileText className='h-6 w-6 text-orange-600' />
-            </div>
-            <div>
-              <p className='text-2xl font-bold text-gray-900'>{mockMedicalHistory.length}</p>
-              <p className='text-sm text-gray-600'>Total Cases</p>
-            </div>
-          </div>
-        </div>
-        <div className='rounded-lg border border-gray-200 bg-white p-4'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-lg bg-green-50'>
-              <Calendar className='h-6 w-6 text-green-600' />
-            </div>
-            <div>
-              <p className='text-2xl font-bold text-gray-900'>2</p>
-              <p className='text-sm text-gray-600'>Today</p>
-            </div>
-          </div>
-        </div>
-        <div className='rounded-lg border border-gray-200 bg-white p-4'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50'>
-              <HistoryIcon className='h-6 w-6 text-blue-600' />
-            </div>
-            <div>
-              <p className='text-2xl font-bold text-gray-900'>1</p>
-              <p className='text-sm text-gray-600'>This Week</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Medical Records List */}
@@ -88,9 +83,6 @@ const MedicalHistory = () => {
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase'>
                   Pet
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase'>
-                  Owner
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-semibold tracking-wider text-gray-700 uppercase'>
                   Diagnosis
@@ -116,22 +108,17 @@ const MedicalHistory = () => {
                     <div className='text-sm font-medium text-gray-900'>{record.petName}</div>
                   </td>
                   <td className='px-6 py-4'>
-                    <div className='flex items-center gap-2'>
-                      <User className='h-4 w-4 text-gray-400' />
-                      <span className='text-sm text-gray-900'>{record.ownerName}</span>
-                    </div>
-                  </td>
-                  <td className='px-6 py-4'>
                     <div className='text-sm text-gray-900'>{record.diagnosis}</div>
                     <div className='mt-1 text-xs text-gray-500'>{record.symptoms}</div>
                   </td>
                   <td className='px-6 py-4'>
-                    <div className='text-sm text-gray-900'>
-                      {new Date(record.nextVisit).toLocaleDateString('vi-VN')}
-                    </div>
+                    <div className='text-sm text-gray-900'>{record.nextAppointment}</div>
                   </td>
                   <td className='px-6 py-4'>
-                    <button className='rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-colors hover:bg-orange-50'>
+                    <button
+                      onClick={() => handleOpenDetailModal(record)}
+                      className='cursor-pointer rounded-lg border border-orange-300 bg-white px-4 py-2 text-sm font-medium text-orange-600 transition-colors hover:bg-orange-50'
+                    >
                       View Details
                     </button>
                   </td>
@@ -150,6 +137,9 @@ const MedicalHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Medical Detail Modal */}
+      <MedicalDetailModal isOpen={isDetailModalOpen} onClose={handleCloseDetailModal} record={selectedRecord} />
     </div>
   );
 };

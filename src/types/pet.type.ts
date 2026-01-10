@@ -25,3 +25,71 @@ export const PetFormSchema = z.object({
 });
 
 export type PetFormInput = z.input<typeof PetFormSchema>;
+
+export type GetPetsByOwnerIdParams = {
+  idKhachHang: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+export type GetPetsByOwnerIdItemResponse = {
+  idThuCung: number;
+  maThuCung: string;
+  ten: string;
+};
+
+export type GetPetsByOwnerIdResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: GetPetsByOwnerIdItemResponse[];
+};
+
+export type GetPetDetailParams = {
+  idThuCung: number;
+};
+
+export type GetPetDetailResponse = {
+  idThuCung: number;
+  maThuCung: string;
+  ten: string;
+  loai: string;
+  giong: string;
+  gioiTinh: string;
+  ngaySinh: string;
+  tinhTrangSucKhoe: string;
+  idChu: number | null;
+};
+
+export type GetPetMedicalRecordsParams = {
+  idThuCung: number;
+  pageNo?: number;
+  pageSize?: number;
+};
+
+//  "idHoSo": 13,
+//         "thoiGianKham": "2025-12-10T14:20:00",
+//         "idThuCung": 13,
+//         "trieuChung": "Nôn dịch vàng",
+//         "chuanDoan": "Viêm dạ dày",
+//         "ngayTaiKham": "2025-12-13",
+//         "idBacSi": 9
+export type GetPetMedicalRecordItemResponse = {
+  idHoSo: number;
+  thoiGianKham: string;
+  idThuCung: number;
+  trieuChung: string;
+  chuanDoan: string;
+  ngayTaiKham: string | null;
+  idBacSi: number;
+  tenBacSi: string | null;
+};
+
+export type GetPetMedicalRecordsResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: GetPetMedicalRecordItemResponse[];
+};

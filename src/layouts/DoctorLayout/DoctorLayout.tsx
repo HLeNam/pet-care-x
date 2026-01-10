@@ -1,17 +1,25 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Pill, FileText, Calendar, History, LogOut } from 'lucide-react';
-import { useAppContext } from '~/contexts';
+import { useMutation } from '@tanstack/react-query';
+import authApi from '~/apis/auth.api';
+import { clearUserInfoFromLocalStorage } from '~/utils/auth';
 
 const DoctorLayout = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { setIsAuthenticated, setProfile } = useAppContext();
   const pathname = location.pathname;
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setProfile(null);
-    navigate('/login');
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logoutAccount
+  });
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+
+      clearUserInfoFromLocalStorage();
+    } catch (error) {
+      console.log('🚀 ~ handleLogout ~ error:', error);
+    }
   };
 
   const menuItems = [
@@ -67,8 +75,9 @@ const DoctorLayout = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                      }`}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                      isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                   >
                     <Icon className='h-4 w-4' />
                     <span>{item.label}</span>
@@ -104,8 +113,9 @@ const DoctorLayout = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 ${isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
+                  className={`flex flex-shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors duration-200 ${
+                    isActive ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
                 >
                   <Icon className='h-4 w-4' />
                   <span>{item.label}</span>

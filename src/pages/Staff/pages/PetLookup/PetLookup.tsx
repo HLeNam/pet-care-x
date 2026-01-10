@@ -1,128 +1,103 @@
-import { useState } from 'react';
-import { Search, FileText, User, Phone, Calendar, X, Pill } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, FileText, User, Phone, Calendar, X } from 'lucide-react';
+import { useCustomerByPhone } from '~/hooks/useCustomerByPhone';
+import { usePetsByOwner } from '~/hooks/usePetsByOwner';
+import { usePetDetails } from '~/hooks/usePetDetails';
+import { usePetMedicalRecords } from '~/hooks/usePetMedicalRecords';
+import useQueryParams from '~/hooks/useQueryParams';
+import { Pagination } from '~/pages/User/components/Pagination';
+import type { GetCustomerByPhoneResponse } from '~/types/customer.type';
 
-// Mock data
-const mockOwners = [
-  { id: 1, name: 'Nguyễn Văn A', phone: '0901234567' },
-  { id: 2, name: 'Trần Thị B', phone: '0912345678' },
-  { id: 3, name: 'Lê Văn C', phone: '0923456789' }
-];
-
-const mockPets = [
-  {
-    id: 1,
-    name: 'Milo',
-    ownerId: 1,
-    species: 'Chó',
-    breed: 'Golden Retriever',
-    age: 3,
-    gender: 'Đực',
-    birthDate: '2021-05-15',
-    healthStatus: 'Khỏe mạnh'
-  },
-  {
-    id: 2,
-    name: 'Luna',
-    ownerId: 1,
-    species: 'Mèo',
-    breed: 'British Shorthair',
-    age: 2,
-    gender: 'Cái',
-    birthDate: '2022-08-20',
-    healthStatus: 'Khỏe mạnh'
-  },
-  {
-    id: 3,
-    name: 'Max',
-    ownerId: 2,
-    species: 'Chó',
-    breed: 'Poodle',
-    age: 4,
-    gender: 'Đực',
-    birthDate: '2020-12-10',
-    healthStatus: 'Khỏe mạnh'
-  },
-  {
-    id: 4,
-    name: 'Bella',
-    ownerId: 3,
-    species: 'Mèo',
-    breed: 'Persian',
-    age: 1,
-    gender: 'Cái',
-    birthDate: '2023-03-05',
-    healthStatus: 'Khỏe mạnh'
+// Helper function to format doctor name
+const formatDoctorName = (tenBacSi: string | null): string => {
+  if (!tenBacSi) {
+    return 'No information';
   }
-];
-
-const mockMedicalRecords = [
-  {
-    id: 1,
-    petId: 1,
-    date: '2025-12-20',
-    doctorName: 'BS. Nguyễn Văn A',
-    symptoms: 'Nôn mửa, tiêu chảy',
-    diagnosis: 'Viêm dạ dày',
-    nextVisit: '2026-01-15'
-  },
-  {
-    id: 2,
-    petId: 1,
-    date: '2025-11-15',
-    doctorName: 'BS. Trần Thị B',
-    symptoms: 'Ho, sổ mũi',
-    diagnosis: 'Cảm lạnh',
-    nextVisit: '2025-11-25'
-  },
-  {
-    id: 3,
-    petId: 2,
-    date: '2025-12-10',
-    doctorName: 'BS. Lê Văn C',
-    symptoms: 'Ngứa da, rụng lông',
-    diagnosis: 'Dị ứng',
-    nextVisit: '2026-01-10'
-  }
-];
-
-const mockPrescriptions = [
-  { id: 1, recordId: 1, medicineName: 'Amoxicillin', quantity: 2, unit: 'viên/ngày', duration: '7 ngày' },
-  { id: 2, recordId: 1, medicineName: 'Probiotics', quantity: 1, unit: 'gói/ngày', duration: '5 ngày' },
-  { id: 3, recordId: 2, medicineName: 'Cục Hạ ', quantity: 1, unit: 'viên/ngày', duration: '5 ngày' },
-  { id: 4, recordId: 2, medicineName: 'Vitamin C', quantity: 1, unit: 'viên/ngày', duration: '7 ngày' },
-  { id: 5, recordId: 3, medicineName: 'Thuốc chống dị ứng', quantity: 1, unit: 'viên/ngày', duration: '10 ngày' },
-  { id: 6, recordId: 3, medicineName: 'Thuốc bôi da', quantity: 2, unit: 'lần/ngày', duration: '14 ngày' }
-];
+  return tenBacSi;
+};
 
 const PetLookup = () => {
   const [ownerPhone, setOwnerPhone] = useState('');
-  const [selectedOwner, setSelectedOwner] = useState<number | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<GetCustomerByPhoneResponse | null>(null);
   const [selectedPet, setSelectedPet] = useState<number | null>(null);
-  const [isLoadingOwner, setIsLoadingOwner] = useState(false);
+  const [enableSearch, setEnableSearch] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<number | null>(null);
 
-  const selectedOwnerData = mockOwners.find((o) => o.id === selectedOwner);
-  const filteredPets = mockPets.filter((p) => p.ownerId === selectedOwner);
-  const selectedPetData = mockPets.find((p) => p.id === selectedPet);
-  const petMedicalRecords = mockMedicalRecords.filter((r) => r.petId === selectedPet);
-  const selectedRecordData = mockMedicalRecords.find((r) => r.id === selectedRecord);
-  const recordPrescriptions = mockPrescriptions.filter((p) => p.recordId === selectedRecord);
+  // Query params for pagination
+  const { getParam, updateParams } = useQueryParams();
+  const currentPage = Number(getParam('page', '1'));
+  const pageSize = 5; // Records per page
 
-  const handlePhoneSearch = () => {
+  // React Query hook to search customer by phone
+  const {
+    isLoading: isLoadingOwner,
+    isError: isCustomerError,
+    refetch: searchCustomer
+  } = useCustomerByPhone({
+    phoneNumber: ownerPhone,
+    enabled: enableSearch
+  });
+
+  // React Query hook to get pets by owner ID
+  const { data: filteredPets = [], isLoading: isLoadingPets } = usePetsByOwner({
+    idKhachHang: customerInfo?.idKhachHang || null,
+    enabled: !!customerInfo
+  });
+
+  // React Query hook to get pet details
+  const { data: petDetailsData, isLoading: isLoadingPetDetails } = usePetDetails({
+    idThuCung: selectedPet,
+    enabled: !!selectedPet
+  });
+
+  // React Query hook to get pet medical records with pagination
+  const { data: medicalRecordsData, isLoading: isLoadingMedicalRecords } = usePetMedicalRecords({
+    idThuCung: selectedPet,
+    pageNo: currentPage,
+    pageSize: pageSize,
+    enabled: !!selectedPet
+  });
+
+  const petMedicalRecords = medicalRecordsData?.items || [];
+  const totalPages = medicalRecordsData?.totalPage || 0;
+  const totalElements = medicalRecordsData?.totalElements || 0;
+
+  const selectedPetData = filteredPets.find((p) => p.pet_id === selectedPet);
+  const petDetails = petDetailsData?.data?.data;
+  const selectedRecordData = petMedicalRecords.find((r) => r.idHoSo === selectedRecord);
+
+  // Reset page to 1 when pet changes
+  useEffect(() => {
+    if (selectedPet) {
+      updateParams({ page: null }); // Remove page param for page 1
+    }
+  }, [selectedPet, updateParams]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (page === 1) {
+      updateParams({ page: null }); // Remove page param for page 1
+    } else {
+      updateParams({ page: String(page) });
+    }
+  };
+
+  const handlePhoneSearch = async () => {
     if (!ownerPhone.trim()) return;
 
-    setIsLoadingOwner(true);
-    setSelectedOwner(null);
+    setCustomerInfo(null);
     setSelectedPet(null);
+    setEnableSearch(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const owner = mockOwners.find((o) => o.phone === ownerPhone.trim());
-      if (owner) {
-        setSelectedOwner(owner.id);
-      }
-      setIsLoadingOwner(false);
-    }, 500);
+    // Trigger search
+    const result = await searchCustomer();
+
+    if (result.data?.data?.data) {
+      setCustomerInfo(result.data.data.data);
+      // usePetsByOwner will automatically fetch pets when customerInfo is set
+    }
+
+    setEnableSearch(false);
   };
 
   return (
@@ -166,15 +141,17 @@ const PetLookup = () => {
               </button>
             </div>
             {isLoadingOwner && <p className='mt-2 text-sm text-gray-500'>Searching...</p>}
-            {!isLoadingOwner && selectedOwner && selectedOwnerData && (
-              <p className='mt-2 text-sm text-green-600'>
-                Owner: {selectedOwnerData.name} ({selectedOwnerData.phone})
-              </p>
+            {!isLoadingOwner && customerInfo && (
+              <div className='mt-2 space-y-1'>
+                <p className='text-sm text-green-600'>Owner: {customerInfo.hoTen}</p>
+                <p className='text-xs text-gray-500'>
+                  Code: {customerInfo.maKhachHang} | Phone: {customerInfo.soDienThoai}
+                </p>
+              </div>
             )}
-            {!isLoadingOwner && ownerPhone.trim() && !selectedOwner && ownerPhone && (
+            {!isLoadingOwner && isCustomerError && ownerPhone.trim() && (
               <p className='mt-2 text-sm text-red-600'>Owner not found</p>
             )}
-            {isLoadingOwner && <p className='mt-2 text-sm text-gray-500'>Loading...</p>}
           </div>
 
           {/* Pet Selection */}
@@ -186,18 +163,22 @@ const PetLookup = () => {
               id='pet'
               value={selectedPet || ''}
               onChange={(e) => setSelectedPet(Number(e.target.value) || null)}
-              disabled={!selectedOwner || isLoadingOwner}
+              disabled={!customerInfo || isLoadingOwner || isLoadingPets}
               className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
-              <option value=''>-- Select Pet --</option>
+              <option value=''>{isLoadingPets ? 'Loading pets...' : '-- Select Pet --'}</option>
               {filteredPets.map((pet) => (
-                <option key={pet.id} value={pet.id}>
-                  {pet.name} - {pet.species}
+                <option key={pet.pet_id} value={pet.pet_id}>
+                  {pet.name} ({pet.pet_code})
                 </option>
               ))}
             </select>
-            {selectedOwner && filteredPets.length > 0 && !isLoadingOwner && (
-              <p className='mt-2 text-sm text-green-600'>{filteredPets.length} pets available</p>
+            {isLoadingPets && <p className='mt-2 text-sm text-gray-500'>Loading pets...</p>}
+            {!isLoadingPets && customerInfo && filteredPets.length > 0 && (
+              <p className='mt-2 text-sm text-green-600'>{filteredPets.length} pet(s) available</p>
+            )}
+            {!isLoadingPets && customerInfo && filteredPets.length === 0 && (
+              <p className='mt-2 text-sm text-red-600'>No pets found for this owner</p>
             )}
           </div>
         </div>
@@ -209,51 +190,63 @@ const PetLookup = () => {
           {/* Pet Information Card */}
           <div className='rounded-lg border border-gray-200 bg-white p-6'>
             <h2 className='mb-4 text-lg font-semibold text-gray-900'>Pet Information</h2>
-            <div className='grid gap-4 md:grid-cols-3'>
-              <div>
-                <span className='text-sm text-gray-600'>Name:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.name}</p>
+            {isLoadingPetDetails ? (
+              <div className='py-8 text-center'>
+                <p className='text-sm text-gray-500'>Loading pet details...</p>
               </div>
-              <div>
-                <span className='text-sm text-gray-600'>Species:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.species}</p>
-              </div>
-              <div>
-                <span className='text-sm text-gray-600'>Breed:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.breed}</p>
-              </div>
-              <div>
-                <span className='text-sm text-gray-600'>Age:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.age} years old</p>
-              </div>
-              <div>
-                <span className='text-sm text-gray-600'>Gender:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.gender}</p>
-              </div>
-              <div>
-                <span className='text-sm text-gray-600'>Birth Date:</span>
-                <p className='font-medium text-gray-900'>
-                  {new Date(selectedPetData.birthDate).toLocaleDateString('vi-VN')}
-                </p>
-              </div>
-              <div>
-                <span className='text-sm text-gray-600'>Health Status:</span>
-                <p className='font-medium text-gray-900'>{selectedPetData.healthStatus}</p>
-              </div>
-            </div>
-            {selectedOwnerData && (
-              <div className='mt-4 border-t border-gray-200 pt-4'>
-                <span className='mb-2 block text-sm text-gray-600'>Owner:</span>
-                <div className='flex flex-wrap items-center gap-4'>
-                  <div className='flex items-center gap-2'>
-                    <User className='h-4 w-4 text-gray-400' />
-                    <span className='font-medium text-gray-900'>{selectedOwnerData.name}</span>
+            ) : petDetails ? (
+              <>
+                <div className='grid gap-4 md:grid-cols-3'>
+                  <div>
+                    <span className='text-sm text-gray-600'>Name:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.ten}</p>
                   </div>
-                  <div className='flex items-center gap-2'>
-                    <Phone className='h-4 w-4 text-gray-400' />
-                    <span className='text-gray-600'>{selectedOwnerData.phone}</span>
+                  <div>
+                    <span className='text-sm text-gray-600'>Pet Code:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.maThuCung}</p>
+                  </div>
+                  <div>
+                    <span className='text-sm text-gray-600'>Species:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.loai || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className='text-sm text-gray-600'>Breed:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.giong || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className='text-sm text-gray-600'>Gender:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.gioiTinh}</p>
+                  </div>
+                  <div>
+                    <span className='text-sm text-gray-600'>Birth Date:</span>
+                    <p className='font-medium text-gray-900'>
+                      {petDetails.ngaySinh ? new Date(petDetails.ngaySinh).toLocaleDateString('en-US') : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className='text-sm text-gray-600'>Health Status:</span>
+                    <p className='font-medium text-gray-900'>{petDetails.tinhTrangSucKhoe || 'N/A'}</p>
                   </div>
                 </div>
+                {customerInfo && (
+                  <div className='mt-4 border-t border-gray-200 pt-4'>
+                    <span className='mb-2 block text-sm text-gray-600'>Owner:</span>
+                    <div className='flex flex-wrap items-center gap-4'>
+                      <div className='flex items-center gap-2'>
+                        <User className='h-4 w-4 text-gray-400' />
+                        <span className='font-medium text-gray-900'>{customerInfo.hoTen}</span>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <Phone className='h-4 w-4 text-gray-400' />
+                        <span className='text-gray-600'>{customerInfo.soDienThoai}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className='py-8 text-center'>
+                <p className='text-sm text-red-600'>Failed to load pet details</p>
               </div>
             )}
           </div>
@@ -262,10 +255,20 @@ const PetLookup = () => {
           <div className='rounded-lg border border-gray-200 bg-white p-6'>
             <div className='mb-4 flex items-center justify-between'>
               <h2 className='text-lg font-semibold text-gray-900'>Medical History</h2>
-              <span className='text-sm text-gray-500'>{petMedicalRecords.length} records</span>
+              <span className='text-sm text-gray-500'>
+                {isLoadingMedicalRecords
+                  ? 'Loading...'
+                  : totalElements > 0
+                    ? `Showing ${petMedicalRecords.length} of ${totalElements} records`
+                    : '0 records'}
+              </span>
             </div>
 
-            {petMedicalRecords.length === 0 ? (
+            {isLoadingMedicalRecords ? (
+              <div className='py-8 text-center'>
+                <p className='text-sm text-gray-500'>Loading medical records...</p>
+              </div>
+            ) : petMedicalRecords.length === 0 ? (
               <div className='py-8 text-center'>
                 <FileText className='mx-auto h-12 w-12 text-gray-400' />
                 <h3 className='mt-4 text-sm font-medium text-gray-900'>No Medical History</h3>
@@ -275,7 +278,7 @@ const PetLookup = () => {
               <div className='space-y-3'>
                 {petMedicalRecords.map((record) => (
                   <div
-                    key={record.id}
+                    key={record.idHoSo}
                     className='rounded-lg border border-gray-200 bg-gray-50 p-4 transition-colors hover:bg-gray-100'
                   >
                     <div className='flex items-start justify-between'>
@@ -287,25 +290,33 @@ const PetLookup = () => {
                           <div className='mb-2 flex items-center gap-2 text-sm'>
                             <Calendar className='h-4 w-4 text-gray-400' />
                             <span className='font-medium text-gray-900'>
-                              {new Date(record.date).toLocaleDateString('vi-VN')}
+                              {new Date(record.thoiGianKham).toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </span>
                             <span className='text-gray-400'>•</span>
-                            <span className='text-gray-600'>{record.doctorName}</span>
+                            <span className='text-gray-600'>{formatDoctorName(record.tenBacSi)}</span>
                           </div>
                           <p className='mt-1 text-sm text-gray-600'>
-                            <span className='font-medium'>Symptoms:</span> {record.symptoms}
+                            <span className='font-medium'>Symptoms:</span> {record.trieuChung}
                           </p>
                           <p className='mt-1 text-sm text-gray-600'>
-                            <span className='font-medium'>Diagnosis:</span> {record.diagnosis}
+                            <span className='font-medium'>Diagnosis:</span> {record.chuanDoan}
                           </p>
-                          <p className='mt-1 text-sm text-gray-600'>
-                            <span className='font-medium'>Next Visit:</span>{' '}
-                            {new Date(record.nextVisit).toLocaleDateString('vi-VN')}
-                          </p>
+                          {record.ngayTaiKham && (
+                            <p className='mt-1 text-sm text-gray-600'>
+                              <span className='font-medium'>Next Visit:</span>{' '}
+                              {new Date(record.ngayTaiKham).toLocaleDateString('en-US')}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <button
-                        onClick={() => setSelectedRecord(record.id)}
+                        onClick={() => setSelectedRecord(record.idHoSo)}
                         className='text-sm font-medium text-orange-600 hover:text-orange-700'
                       >
                         View Details
@@ -315,12 +326,19 @@ const PetLookup = () => {
                 ))}
               </div>
             )}
+
+            {/* Pagination */}
+            {!isLoadingMedicalRecords && totalPages > 1 && (
+              <div className='mt-6 flex justify-center'>
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Medical Record Detail Modal */}
-      {selectedRecord && selectedRecordData && selectedPetData && selectedOwnerData && (
+      {selectedRecord && selectedRecordData && selectedPetData && customerInfo && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4'>
           <div className='flex max-h-[90vh] w-full max-w-3xl flex-col rounded-lg bg-white'>
             {/* Modal Header - Fixed */}
@@ -341,22 +359,28 @@ const PetLookup = () => {
                 <h3 className='mb-3 font-semibold text-gray-900'>Basic Information</h3>
                 <div className='grid gap-4 sm:grid-cols-2'>
                   <div>
-                    <span className='text-sm text-gray-600'>Owner Name:</span>
-                    <p className='font-medium text-gray-900'>{selectedOwnerData.name}</p>
+                    <span className='text-sm text-gray-600'>Pet Owner:</span>
+                    <p className='font-medium text-gray-900'>{customerInfo.hoTen}</p>
                   </div>
                   <div>
                     <span className='text-sm text-gray-600'>Pet Name:</span>
-                    <p className='font-medium text-gray-900'>{selectedPetData.name}</p>
+                    <p className='font-medium text-gray-900'>{petDetails?.ten || selectedPetData.name}</p>
                   </div>
                   <div>
-                    <span className='text-sm text-gray-600'>Visit Date:</span>
+                    <span className='text-sm text-gray-600'>Examination Time:</span>
                     <p className='font-medium text-gray-900'>
-                      {new Date(selectedRecordData.date).toLocaleDateString('vi-VN')}
+                      {new Date(selectedRecordData.thoiGianKham).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </p>
                   </div>
                   <div>
                     <span className='text-sm text-gray-600'>Doctor:</span>
-                    <p className='font-medium text-gray-900'>{selectedRecordData.doctorName}</p>
+                    <p className='font-medium text-gray-900'>{formatDoctorName(selectedRecordData.tenBacSi)}</p>
                   </div>
                 </div>
               </div>
@@ -366,60 +390,26 @@ const PetLookup = () => {
                 <div>
                   <h3 className='mb-2 font-semibold text-gray-900'>Symptoms</h3>
                   <p className='rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700'>
-                    {selectedRecordData.symptoms}
+                    {selectedRecordData.trieuChung}
                   </p>
                 </div>
                 <div>
                   <h3 className='mb-2 font-semibold text-gray-900'>Diagnosis</h3>
                   <p className='rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700'>
-                    {selectedRecordData.diagnosis}
+                    {selectedRecordData.chuanDoan}
                   </p>
                 </div>
-                <div>
-                  <h3 className='mb-2 font-semibold text-gray-900'>Next Visit Date</h3>
-                  <p className='rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700'>
-                    {new Date(selectedRecordData.nextVisit).toLocaleDateString('vi-VN')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Prescription */}
-              <div>
-                <h3 className='mb-3 font-semibold text-gray-900'>Prescription</h3>
-                {recordPrescriptions.length === 0 ? (
-                  <p className='rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-500'>
-                    No prescription
-                  </p>
-                ) : (
-                  <div className='rounded-lg border border-gray-200'>
-                    <table className='w-full'>
-                      <thead className='bg-gray-50'>
-                        <tr>
-                          <th className='px-4 py-3 text-left text-sm font-semibold text-gray-900'>Medicine Name</th>
-                          <th className='px-4 py-3 text-left text-sm font-semibold text-gray-900'>Dosage</th>
-                          <th className='px-4 py-3 text-left text-sm font-semibold text-gray-900'>Duration</th>
-                        </tr>
-                      </thead>
-                      <tbody className='divide-y divide-gray-200'>
-                        {recordPrescriptions.map((prescription) => (
-                          <tr key={prescription.id} className='hover:bg-gray-50'>
-                            <td className='px-4 py-3'>
-                              <div className='flex items-center gap-2'>
-                                <Pill className='h-4 w-4 text-orange-500' />
-                                <span className='text-sm font-medium text-gray-900'>{prescription.medicineName}</span>
-                              </div>
-                            </td>
-                            <td className='px-4 py-3 text-sm text-gray-700'>
-                              {prescription.quantity} {prescription.unit}
-                            </td>
-                            <td className='px-4 py-3 text-sm text-gray-700'>{prescription.duration}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                {selectedRecordData.ngayTaiKham && (
+                  <div>
+                    <h3 className='mb-2 font-semibold text-gray-900'>Next Visit Date</h3>
+                    <p className='rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700'>
+                      {new Date(selectedRecordData.ngayTaiKham).toLocaleDateString('en-US')}
+                    </p>
                   </div>
                 )}
               </div>
+
+              {/* Note: Prescription data will be added when API is available */}
             </div>
 
             {/* Modal Footer - Fixed */}

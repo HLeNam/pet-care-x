@@ -31,3 +31,16 @@ export type DoctorAvailableListResponse = {
   totalElements: number;
   items: DoctorAvailableItemResponse[];
 };
+
+export type CreateAppointmentRequest = {
+  idChiNhanh: number;
+  tenChiNhanh: string;
+  idKhachHang: number;
+  tenKhachHang: string;
+  idThuCung: number;
+  tenThuCung: string;
+  ngayHen: string;
+  gioBatDau: string;
+  idNhanVien: number;
+  tenBacSi: string;
+};

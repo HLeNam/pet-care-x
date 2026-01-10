@@ -1,67 +1,12 @@
 import { useState } from 'react';
-import { CheckCircle, Search } from 'lucide-react';
-import type { Pet } from '~/types/pet.type';
+import { Search } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useBranchList } from '~/hooks/useBranchList';
 import { useDoctorsAvailable } from '~/hooks/useDoctorsAvailable';
-
-const mockCustomers = [
-  { phone: '0901234567', name: 'Nguyễn Văn A', customer_id: 1 },
-  { phone: '0912345678', name: 'Trần Thị B', customer_id: 2 },
-  { phone: '0923456789', name: 'Lê Văn C', customer_id: 3 }
-];
-
-const mockPetsByCustomer: Record<number, Pet[]> = {
-  1: [
-    {
-      pet_id: 1,
-      pet_code: 'PET001',
-      name: 'Milo',
-      species: 'Chó',
-      breed: 'Golden Retriever',
-      gender: 'Male',
-      birth_date: '2020-05-15',
-      health_status: 'Khỏe mạnh',
-      owner_id: 1
-    },
-    {
-      pet_id: 2,
-      pet_code: 'PET002',
-      name: 'Luna',
-      species: 'Mèo',
-      breed: 'British Shorthair',
-      gender: 'Female',
-      birth_date: '2021-08-20',
-      health_status: 'Khỏe mạnh',
-      owner_id: 1
-    }
-  ],
-  2: [
-    {
-      pet_id: 3,
-      pet_code: 'PET003',
-      name: 'Max',
-      species: 'Chó',
-      breed: 'Poodle',
-      gender: 'Male',
-      birth_date: '2019-12-10',
-      health_status: 'Khỏe mạnh',
-      owner_id: 2
-    }
-  ],
-  3: [
-    {
-      pet_id: 4,
-      pet_code: 'PET004',
-      name: 'Bella',
-      species: 'Mèo',
-      breed: 'Persian',
-      gender: 'Female',
-      birth_date: '2022-03-05',
-      health_status: 'Khỏe mạnh',
-      owner_id: 3
-    }
-  ]
-};
+import { useCustomerByPhone } from '~/hooks/useCustomerByPhone';
+import { usePetsByOwner } from '~/hooks/usePetsByOwner';
+import { useCreateAppointment } from '~/hooks/useCreateAppointment';
+import type { GetCustomerByPhoneResponse } from '~/types/customer.type';
 
 const CreateAppointment = () => {
   // Fetch danh sách chi nhánh từ API
@@ -75,11 +20,24 @@ const CreateAppointment = () => {
     petId: '',
     doctorId: ''
   });
-  const [customerInfo, setCustomerInfo] = useState<{ name: string; customer_id: number } | null>(null);
-  const [availablePets, setAvailablePets] = useState<Pet[]>([]);
-  const [isLoadingCustomer, setIsLoadingCustomer] = useState(false);
-  const [customerSearched, setCustomerSearched] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState<GetCustomerByPhoneResponse | null>(null);
+  const [enableSearch, setEnableSearch] = useState(false);
+
+  // React Query hook để search khách hàng theo số điện thoại
+  const {
+    isLoading: isLoadingCustomer,
+    isError: isCustomerError,
+    refetch: searchCustomer
+  } = useCustomerByPhone({
+    phoneNumber: formData.customerPhone,
+    enabled: enableSearch
+  });
+
+  // React Query hook để lấy danh sách thú cưng theo owner ID
+  const { data: availablePets = [], isLoading: isLoadingPets } = usePetsByOwner({
+    idKhachHang: customerInfo?.idKhachHang || null,
+    enabled: !!customerInfo
+  });
 
   // Fetch danh sách bác sĩ rảnh từ API
   const { data: availableDoctors = [], isLoading: isLoadingDoctors } = useDoctorsAvailable({
@@ -88,34 +46,29 @@ const CreateAppointment = () => {
     time: formData.time
   });
 
-  // Tìm kiếm khách hàng khi nhập số điện thoại (giả lập API call)
-  const handlePhoneSearch = () => {
+  // Mutation hook để tạo lịch hẹn
+  const createAppointmentMutation = useCreateAppointment();
+
+  // Tìm kiếm khách hàng khi nhập số điện thoại
+  const handlePhoneSearch = async () => {
     if (!formData.customerPhone) return;
 
-    // Giả lập gọi API
-    setIsLoadingCustomer(true);
     setCustomerInfo(null);
-    setAvailablePets([]);
-    setCustomerSearched(false);
+    setFormData((prev) => ({ ...prev, petId: '' }));
+    setEnableSearch(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      const customer = mockCustomers.find((c) => c.phone === formData.customerPhone);
-      if (customer) {
-        setCustomerInfo({ name: customer.name, customer_id: customer.customer_id });
-        setAvailablePets(mockPetsByCustomer[customer.customer_id] || []);
-        setFormData((prev) => ({ ...prev, petId: '' }));
-      } else {
-        setCustomerInfo(null);
-        setAvailablePets([]);
-        setFormData((prev) => ({ ...prev, petId: '' }));
-      }
-      setIsLoadingCustomer(false);
-      setCustomerSearched(true);
-    }, 500); // 500ms delay để giả lập API call
+    // Trigger search
+    const result = await searchCustomer();
+
+    if (result.data?.data?.data) {
+      setCustomerInfo(result.data.data.data);
+      // usePetsByOwner sẽ tự động fetch pets khi customerInfo được set
+    }
+
+    setEnableSearch(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate form
@@ -127,19 +80,46 @@ const CreateAppointment = () => {
       !formData.petId ||
       !formData.doctorId
     ) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all required fields');
       return;
     }
 
     if (!customerInfo) {
-      alert('Vui lòng tìm kiếm khách hàng trước');
+      toast.error('Please search for customer first');
       return;
     }
 
-    // Show success message
-    setShowSuccessMessage(true);
-    setTimeout(() => {
-      setShowSuccessMessage(false);
+    // Tìm thông tin chi nhánh, thú cưng và bác sĩ
+    const selectedBranch = branches.find((b) => b.branch_id === Number(formData.branchId));
+    const selectedPet = availablePets.find((p) => p.pet_id === Number(formData.petId));
+    const selectedDoctor = availableDoctors.find((d) => d.employee_id === Number(formData.doctorId));
+
+    if (!selectedBranch || !selectedPet || !selectedDoctor) {
+      toast.error('Invalid information. Please try again');
+      return;
+    }
+
+    // Parse time (format: "HH:mm")
+    const [hour, minute] = formData.time.split(':').map(Number);
+
+    try {
+      // Gọi API tạo lịch hẹn
+      await createAppointmentMutation.mutateAsync({
+        idChiNhanh: selectedBranch.branch_id,
+        tenChiNhanh: selectedBranch.name,
+        idKhachHang: customerInfo.idKhachHang,
+        tenKhachHang: customerInfo.hoTen,
+        idThuCung: selectedPet.pet_id,
+        tenThuCung: selectedPet.name,
+        ngayHen: formData.date,
+        gioBatDau: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`,
+        idNhanVien: selectedDoctor.employee_id,
+        tenBacSi: selectedDoctor.name
+      });
+
+      // Show success toast
+      toast.success('Appointment created successfully!');
+
       // Reset form
       setFormData({
         branchId: '',
@@ -150,8 +130,10 @@ const CreateAppointment = () => {
         doctorId: ''
       });
       setCustomerInfo(null);
-      setAvailablePets([]);
-    }, 2000);
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      toast.error('Failed to create appointment. Please try again.');
+    }
   };
 
   const handleReset = () => {
@@ -164,7 +146,6 @@ const CreateAppointment = () => {
       doctorId: ''
     });
     setCustomerInfo(null);
-    setAvailablePets([]);
   };
 
   return (
@@ -173,16 +154,6 @@ const CreateAppointment = () => {
         <h1 className='text-2xl font-bold text-gray-900'>Create Walk-in Appointment</h1>
         <p className='mt-1 text-sm text-gray-600'>Book an appointment for walk-in customers</p>
       </div>
-
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className='mb-6 rounded-lg border border-green-200 bg-green-50 p-4'>
-          <div className='flex items-center gap-2 text-green-800'>
-            <CheckCircle className='h-5 w-5' />
-            <p className='font-medium'>Appointment created successfully!</p>
-          </div>
-        </div>
-      )}
 
       {/* Appointment Form */}
       <div className='rounded-lg border border-gray-200 bg-white p-6'>
@@ -264,14 +235,12 @@ const CreateAppointment = () => {
             </div>
             {isLoadingCustomer && <p className='mt-2 text-sm text-gray-500'>Searching...</p>}
             {!isLoadingCustomer && customerInfo && (
-              <p className='mt-2 text-sm text-green-600'>Customer: {customerInfo.name}</p>
+              <div className='mt-2 space-y-1'>
+                <p className='text-sm text-green-600'>Customer: {customerInfo.hoTen}</p>
+                <p className='text-xs text-gray-500'>Code: {customerInfo.maKhachHang}</p>
+              </div>
             )}
-            {!isLoadingCustomer && customerSearched && !customerInfo && (
-              <p className='mt-2 text-sm text-red-600'>Customer not found</p>
-            )}
-            {!isLoadingCustomer && !customerSearched && formData.customerPhone && (
-              <p className='mt-2 text-sm text-gray-500'>Click "Search" to find customer</p>
-            )}
+            {!isLoadingCustomer && isCustomerError && <p className='mt-2 text-sm text-red-600'>Customer not found</p>}
           </div>
 
           {/* Chọn thú cưng */}
@@ -283,20 +252,21 @@ const CreateAppointment = () => {
               id='pet'
               value={formData.petId}
               onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
-              disabled={!customerInfo}
+              disabled={!customerInfo || isLoadingPets}
               className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
-              <option value=''>Select pet</option>
+              <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select pet'}</option>
               {availablePets.map((pet) => (
                 <option key={pet.pet_id} value={pet.pet_id}>
-                  {pet.name} - {pet.species} ({pet.breed})
+                  {pet.name} ({pet.pet_code})
                 </option>
               ))}
             </select>
-            {customerInfo && availablePets.length > 0 && (
-              <p className='mt-2 text-sm text-green-600'>Customer has {availablePets.length} pets</p>
+            {isLoadingPets && <p className='mt-2 text-sm text-gray-500'>Loading pets...</p>}
+            {!isLoadingPets && customerInfo && availablePets.length > 0 && (
+              <p className='mt-2 text-sm text-green-600'>Customer has {availablePets.length} pet(s)</p>
             )}
-            {customerInfo && availablePets.length === 0 && (
+            {!isLoadingPets && customerInfo && availablePets.length === 0 && (
               <p className='mt-2 text-sm text-red-600'>Customer has no pets yet</p>
             )}
           </div>
@@ -338,15 +308,17 @@ const CreateAppointment = () => {
             <button
               type='button'
               onClick={handleReset}
-              className='flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50'
+              disabled={createAppointmentMutation.isPending}
+              className='flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Cancel
             </button>
             <button
               type='submit'
-              className='flex-1 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700'
+              disabled={createAppointmentMutation.isPending}
+              className='flex-1 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50'
             >
-              Confirm Appointment
+              {createAppointmentMutation.isPending ? 'Creating...' : 'Confirm Appointment'}
             </button>
           </div>
         </form>

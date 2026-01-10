@@ -121,9 +121,9 @@ class Http {
           });
 
           // Clear user info if unauthorized
-          clearUserInfoFromLocalStorage();
-          this.accessToken = '';
-          this.refreshToken = '';
+          // clearUserInfoFromLocalStorage();
+          // this.accessToken = '';
+          // this.refreshToken = '';
           // Optionally, redirect to login page
           // setTimeout(() => {
           //   window.location.href = `/${PATH.login}`;

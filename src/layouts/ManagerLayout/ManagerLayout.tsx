@@ -1,17 +1,25 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { BarChart3, LogOut } from 'lucide-react';
-import { useAppContext } from '~/contexts';
+import { useMutation } from '@tanstack/react-query';
+import authApi from '~/apis/auth.api';
+import { clearUserInfoFromLocalStorage } from '~/utils/auth';
 
 const ManagerLayout = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { setIsAuthenticated, setProfile } = useAppContext();
   const pathname = location.pathname;
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setProfile(null);
-    navigate('/login');
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logoutAccount
+  });
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+
+      clearUserInfoFromLocalStorage();
+    } catch (error) {
+      console.log('🚀 ~ handleLogout ~ error:', error);
+    }
   };
 
   const menuItems = [

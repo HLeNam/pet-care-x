@@ -97,6 +97,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
               src={product.image}
               alt={product.name}
               className='h-full w-full object-cover transition-transform duration-300'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://placehold.co/400x400?text=No+Image';
+              }}
             />
             {/* Badge for category */}
             <div className='absolute top-3 left-3'>
@@ -153,7 +157,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
             {/* Product Info */}
             <div className='mb-4 flex gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3'>
-              <img src={product.image} alt={product.name} className='h-16 w-16 rounded-lg object-cover' />
+              <img
+                src={product.image}
+                alt={product.name}
+                className='h-16 w-16 rounded-lg object-cover'
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://placehold.co/128x128?text=No+Image';
+                }}
+              />
               <div className='flex-1'>
                 <h4 className='line-clamp-2 text-sm font-semibold text-gray-800'>{product.name}</h4>
                 <p className='mt-1 text-base font-bold text-orange-600'>{product.price.toLocaleString('vi-VN')}₫</p>

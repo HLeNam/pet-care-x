@@ -4,10 +4,11 @@ import { useState, useCallback } from 'react';
 interface ProductSearchProps {
   onSearch: (query: string) => void;
   placeholder?: string;
+  initialValue?: string;
 }
 
-const ProductSearch = ({ onSearch, placeholder = 'Search products...' }: ProductSearchProps) => {
-  const [searchValue, setSearchValue] = useState('');
+const ProductSearch = ({ onSearch, placeholder = 'Search products...', initialValue = '' }: ProductSearchProps) => {
+  const [searchValue, setSearchValue] = useState(initialValue);
 
   const handleSearch = useCallback(
     (value: string) => {

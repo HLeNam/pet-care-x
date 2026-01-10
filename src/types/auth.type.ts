@@ -5,6 +5,11 @@ export type AuthResponse = {
   email: string;
   userId: number;
   accessToken: string;
+  roles: {
+    idRole: number;
+    roleName: 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_STAFF' | 'ROLE_MANAGER';
+    description: string;
+  }[];
 };
 
 export type AuthSuccessResponse = {
@@ -12,6 +17,11 @@ export type AuthSuccessResponse = {
   email: string;
   userId: number;
   accessToken: string;
+  roles: {
+    idRole: number;
+    roleName: 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_STAFF' | 'ROLE_MANAGER';
+    description: string;
+  }[];
 };
 
 export type RefreshTokenResponse = {

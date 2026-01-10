@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const RoleSchema = z.enum(['User', 'Admin', 'Staff']);
+export const RoleSchema = z.enum(['ROLE_ADMIN', 'ROLE_USER', 'ROLE_STAFF', 'ROLE_MANAGER']);
 export type Role = z.infer<typeof RoleSchema>;
 
 export const UserSchema = z.object({
@@ -23,7 +23,8 @@ export const AuthUserSchema = z.object({
   name: z.string().max(160, 'Name must be at most 160 characters long.').optional(),
   date_of_birth: z.string().optional(),
   address: z.string().max(160, 'Address must be at most 160 characters long.').optional(),
-  phone: z.string().max(20, 'Phone number must be at most 20 characters long.').optional()
+  phone: z.string().max(20, 'Phone number must be at most 20 characters long.').optional(),
+  roles: z.array(RoleSchema)
 });
 
 export const UpdateUserBodySchema = UserSchema.pick({

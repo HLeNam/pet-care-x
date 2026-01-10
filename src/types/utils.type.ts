@@ -1,5 +1,6 @@
 export interface ResponseApi<Data> {
   message: string;
+  status: number;
   data?: Data;
 }
 

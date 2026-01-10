@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import withAuthGuard from '~/components/AuthGuard';
 import MainLayout from '~/layouts/MainLayout';
 import ProfileLayout from '~/layouts/ProfileLayout';
 import type { AppRouteObject } from '~/types/route.type';
@@ -16,7 +17,7 @@ const DoctorSchedule = lazy(() => import('~/pages/DoctorSchedule'));
 const publicRoutes: AppRouteObject[] = [
   {
     path: '/',
-    Component: MainLayout,
+    Component: withAuthGuard(MainLayout),
     children: [
       {
         path: '',

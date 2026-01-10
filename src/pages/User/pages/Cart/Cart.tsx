@@ -90,7 +90,15 @@ const Cart = () => {
               <div className='flex gap-3 sm:gap-4'>
                 {/* Product Image */}
                 <div className='h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 sm:h-24 sm:w-24 lg:h-28 lg:w-28'>
-                  <img src={item.productImage} alt={item.productName} className='h-full w-full object-cover' />
+                  <img
+                    src={item.productImage}
+                    alt={item.productName}
+                    className='h-full w-full object-cover'
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://placehold.co/400x400?text=No+Image';
+                    }}
+                  />
                 </div>
 
                 {/* Product Info */}

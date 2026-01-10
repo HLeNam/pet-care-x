@@ -168,7 +168,7 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
       // Call onSuccess callback and close modal
       onSuccess(newAppointment);
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create appointment:', error);
 
       // Show error toast with details
@@ -208,8 +208,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 value={formData.branch_id || ''}
                 onChange={(e) => handleInputChange('branch_id', Number(e.target.value))}
                 disabled={isLoadingBranches}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${errors.branch_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                  errors.branch_id ? 'border-red-500' : 'border-gray-300'
+                }`}
               >
                 <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Select Branch'}</option>
                 {branches.map((branch) => (
@@ -231,8 +232,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 value={formData.pet_id || ''}
                 onChange={(e) => handleInputChange('pet_id', Number(e.target.value))}
                 disabled={isLoadingPets}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${errors.pet_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                  errors.pet_id ? 'border-red-500' : 'border-gray-300'
+                }`}
               >
                 <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select Pet'}</option>
                 {pets.map((pet: Pet) => (
@@ -257,8 +259,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                   min={today}
                   value={formData.booking_date || ''}
                   onChange={(e) => handleInputChange('booking_date', e.target.value)}
-                  className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none ${errors.booking_date ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none ${
+                    errors.booking_date ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
                 {errors.booking_date && <p className='mt-1 text-sm text-red-500'>{errors.booking_date}</p>}
               </div>
@@ -273,8 +276,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                   value={formData.booking_time || ''}
                   onChange={(e) => handleInputChange('booking_time', e.target.value)}
                   disabled={!formData.branch_id}
-                  className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${errors.booking_time ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                    errors.booking_time ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value={prefilledData?.time || 'Select time'}>{prefilledData?.time || 'Select time'}</option>
                   {timeSlots.map((time) => (
@@ -297,8 +301,9 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 value={formData.doctor_id || ''}
                 onChange={(e) => handleInputChange('doctor_id', Number(e.target.value))}
                 disabled={isLoadingDoctors || availableDoctors.length === 0}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${errors.doctor_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                  errors.doctor_id ? 'border-red-500' : 'border-gray-300'
+                }`}
               >
                 <option value=''>
                   {isLoadingDoctors

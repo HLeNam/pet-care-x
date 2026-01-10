@@ -1,1 +1,1 @@
-export { default } from './MedicalRecordModal';
+export { default } from './NewMedicalRecordModal';

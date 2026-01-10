@@ -32,22 +32,6 @@ export type DoctorAvailableListResponse = {
   items: DoctorAvailableItemResponse[];
 };
 
-// "idChiNhanh": 0,
-// "tenChiNhanh": "string",
-// "idKhachHang": 0,
-// "tenKhachHang": "string",
-// "idThuCung": 0,
-// "tenThuCung": "string",
-// "ngayHen": "2026-01-10",
-// "gioBatDau": {
-//   "hour": 0,
-//   "minute": 0,
-//   "second": 0,
-//   "nano": 0
-// },
-// "idNhanVien": 0,
-// "tenBacSi": "string"
-
 export type CreateAppointmentRequest = {
   idChiNhanh: number;
   tenChiNhanh: string;

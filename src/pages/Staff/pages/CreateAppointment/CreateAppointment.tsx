@@ -1,39 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CheckCircle, Search } from 'lucide-react';
-import type { Branch } from '~/types/branch.type';
 import type { Pet } from '~/types/pet.type';
-import type { Employee } from '~/types/employee.type';
-
-// Mock data
-const mockBranches: Branch[] = [
-  {
-    branch_id: 1,
-    branch_code: 'BR001',
-    name: 'Chi nhánh Quận 1',
-    address: '123 Nguyễn Huệ, Quận 1, TP.HCM',
-    phone: '028 1234 5678',
-    open_time: '08:00',
-    close_time: '20:00'
-  },
-  {
-    branch_id: 2,
-    branch_code: 'BR002',
-    name: 'Chi nhánh Quận 7',
-    address: '456 Nguyễn Thị Thập, Quận 7, TP.HCM',
-    phone: '028 9876 5432',
-    open_time: '08:00',
-    close_time: '20:00'
-  },
-  {
-    branch_id: 3,
-    branch_code: 'BR003',
-    name: 'Chi nhánh Thủ Đức',
-    address: '789 Võ Văn Ngân, TP. Thủ Đức, TP.HCM',
-    phone: '028 5555 6666',
-    open_time: '08:00',
-    close_time: '20:00'
-  }
-];
+import { useBranchList } from '~/hooks/useBranchList';
+import { useDoctorsAvailable } from '~/hooks/useDoctorsAvailable';
 
 const mockCustomers = [
   { phone: '0901234567', name: 'Nguyễn Văn A', customer_id: 1 },
@@ -94,16 +63,10 @@ const mockPetsByCustomer: Record<number, Pet[]> = {
   ]
 };
 
-const mockDoctors: Employee[] = [
-  { employee_id: 1, employee_code: 'DOC001', name: 'BS. Nguyễn Văn A', gender: 'Nam', position: 1, branch_id: 1 },
-  { employee_id: 2, employee_code: 'DOC002', name: 'BS. Trần Thị B', gender: 'Nữ', position: 1, branch_id: 1 },
-  { employee_id: 3, employee_code: 'DOC003', name: 'BS. Lê Văn C', gender: 'Nam', position: 1, branch_id: 2 },
-  { employee_id: 4, employee_code: 'DOC004', name: 'BS. Phạm Thị D', gender: 'Nữ', position: 1, branch_id: 2 },
-  { employee_id: 5, employee_code: 'DOC005', name: 'BS. Hoàng Văn E', gender: 'Nam', position: 1, branch_id: 3 }
-];
-
 const CreateAppointment = () => {
-  const [branches] = useState<Branch[]>(mockBranches);
+  // Fetch danh sách chi nhánh từ API
+  const { data: branches = [], isLoading: isLoadingBranches } = useBranchList();
+
   const [formData, setFormData] = useState({
     branchId: '',
     date: '',
@@ -114,11 +77,16 @@ const CreateAppointment = () => {
   });
   const [customerInfo, setCustomerInfo] = useState<{ name: string; customer_id: number } | null>(null);
   const [availablePets, setAvailablePets] = useState<Pet[]>([]);
-  const [availableDoctors, setAvailableDoctors] = useState<Employee[]>([]);
-  const [isLoadingDoctors, setIsLoadingDoctors] = useState(false);
   const [isLoadingCustomer, setIsLoadingCustomer] = useState(false);
   const [customerSearched, setCustomerSearched] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Fetch danh sách bác sĩ rảnh từ API
+  const { data: availableDoctors = [], isLoading: isLoadingDoctors } = useDoctorsAvailable({
+    branchId: formData.branchId ? Number(formData.branchId) : null,
+    date: formData.date,
+    time: formData.time
+  });
 
   // Tìm kiếm khách hàng khi nhập số điện thoại (giả lập API call)
   const handlePhoneSearch = () => {
@@ -146,27 +114,6 @@ const CreateAppointment = () => {
       setCustomerSearched(true);
     }, 500); // 500ms delay để giả lập API call
   };
-
-  // Lọc bác sĩ theo chi nhánh, ngày và giờ (giả lập API call)
-  useEffect(() => {
-    if (formData.branchId && formData.date && formData.time) {
-      // Giả lập gọi API
-      setIsLoadingDoctors(true);
-      setAvailableDoctors([]);
-
-      // Simulate API delay
-      const timer = setTimeout(() => {
-        const doctors = mockDoctors.filter((doc) => doc.branch_id === Number(formData.branchId));
-        setAvailableDoctors(doctors);
-        setIsLoadingDoctors(false);
-      }, 600); // 600ms delay để giả lập API call
-
-      return () => clearTimeout(timer);
-    } else {
-      setAvailableDoctors([]);
-      setIsLoadingDoctors(false);
-    }
-  }, [formData.branchId, formData.date, formData.time]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,7 +151,6 @@ const CreateAppointment = () => {
       });
       setCustomerInfo(null);
       setAvailablePets([]);
-      setAvailableDoctors([]);
     }, 2000);
   };
 
@@ -219,7 +165,6 @@ const CreateAppointment = () => {
     });
     setCustomerInfo(null);
     setAvailablePets([]);
-    setAvailableDoctors([]);
   };
 
   return (
@@ -251,9 +196,10 @@ const CreateAppointment = () => {
               id='branch'
               value={formData.branchId}
               onChange={(e) => setFormData({ ...formData, branchId: e.target.value, doctorId: '' })}
-              className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none'
+              disabled={isLoadingBranches}
+              className='w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
             >
-              <option value=''>Select branch</option>
+              <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Select branch'}</option>
               {branches.map((branch) => (
                 <option key={branch.branch_id} value={branch.branch_id}>
                   {branch.name}

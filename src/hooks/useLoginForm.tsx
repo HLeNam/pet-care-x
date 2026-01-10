@@ -97,7 +97,8 @@ export const useLoginForm = (): UseLoginFormReturn => {
       const user: AuthUser = {
         email: data.email,
         idAccount: data.idAccount,
-        userId: data.userId
+        userId: data.userId,
+        roles: data.roles.map((role) => role.roleName)
       };
 
       saveProfileToLocalStorage(user);

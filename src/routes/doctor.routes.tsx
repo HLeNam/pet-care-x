@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
+import withDoctorGuard from '~/components/DoctorGuard/WithDoctorGuard';
 import DoctorLayout from '~/layouts/DoctorLayout';
 import type { AppRouteObject } from '~/types/route.type';
 
@@ -11,7 +12,7 @@ const MedicalHistory = lazy(() => import('~/pages/Doctor/pages/MedicalHistory'))
 const doctorRoutes: AppRouteObject[] = [
   {
     path: '/doctor',
-    Component: DoctorLayout,
+    Component: withDoctorGuard(DoctorLayout),
     children: [
       {
         path: '',

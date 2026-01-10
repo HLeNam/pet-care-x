@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import withAuthGuard from '~/components/AuthGuard';
 import MainLayout from '~/layouts/MainLayout';
 import ProfileLayout from '~/layouts/ProfileLayout';
 import type { AppRouteObject } from '~/types/route.type';
@@ -10,13 +11,14 @@ const OrderHistory = lazy(() => import('~/pages/User/pages/Profile/OrderHistory'
 const MedicalHistory = lazy(() => import('~/pages/User/pages/Profile/MedicalHistory'));
 const ProductDetail = lazy(() => import('~/pages/User/pages/ProductDetail'));
 const Cart = lazy(() => import('~/pages/User/pages/Cart'));
+const Checkout = lazy(() => import('~/pages/User/pages/Checkout'));
 const Booking = lazy(() => import('~/pages/Booking'));
 const DoctorSchedule = lazy(() => import('~/pages/DoctorSchedule'));
 
 const publicRoutes: AppRouteObject[] = [
   {
     path: '/',
-    Component: MainLayout,
+    Component: withAuthGuard(MainLayout),
     children: [
       {
         path: '',
@@ -52,6 +54,10 @@ const publicRoutes: AppRouteObject[] = [
       {
         path: 'cart',
         Component: Cart
+      },
+      {
+        path: 'checkout',
+        Component: Checkout
       },
       {
         path: 'booking',

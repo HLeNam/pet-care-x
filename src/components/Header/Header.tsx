@@ -105,6 +105,10 @@ const Header = () => {
                               src={item.productImage}
                               alt={item.productName}
                               className='h-full w-full object-cover'
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = 'https://placehold.co/400x400?text=No+Image';
+                              }}
                             />
                           </div>
 

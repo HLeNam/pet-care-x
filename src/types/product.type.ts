@@ -25,8 +25,63 @@ export const ProductFilterSchema = z.object({
   category: ProductCategorySchema.optional(),
   minPrice: z.number().optional(),
   maxPrice: z.number().optional(),
-  sortBy: z.enum(['price', 'name', 'createdAt', 'sold']).optional(),
-  order: z.enum(['asc', 'desc']).optional()
+  sortBy: z.enum(['price', 'name', 'createdAt', 'sold', 'idSanPham']).optional(),
+  sortDir: z.enum(['asc', 'desc']).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
+  pageNo: z.number().min(0).optional(),
+  pageSize: z.number().min(0).max(100).optional(),
+  keyword: z.string().optional()
 });
 
 export type ProductFilter = z.infer<typeof ProductFilterSchema>;
+
+export type ProductListParams = {
+  keyword?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: string;
+  category?: string;
+};
+
+export type ProductStock = {
+  idChiNhanh: number;
+  tenChiNhanh: string;
+  soLuong: number;
+  soLuongDaBan: number;
+};
+
+export type ProductItemResponse = {
+  idSanPham: number;
+  maSanPham: string;
+  tenSanPham: string;
+  loaiSanPham: string;
+  giaBan: string;
+  hanSuDung: string;
+  hinhAnh: string;
+  tonKho: ProductStock[];
+};
+
+export type ProductListResponse = {
+  status: string;
+  message: string;
+  data: {
+    pageNo: number;
+    pageSize: number;
+    totalPage: number;
+    totalElements: number;
+    items: ProductItemResponse[];
+  };
+};
+
+export type MedicineItemResponse = Omit<ProductItemResponse, 'tonKho'>;
+
+export type MedicineListResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: MedicineItemResponse[];
+};

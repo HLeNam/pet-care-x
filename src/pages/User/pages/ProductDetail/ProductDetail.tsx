@@ -1,50 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, ArrowLeft, Package, Store, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  ShoppingCart,
+  Minus,
+  Plus,
+  ArrowLeft,
+  Package,
+  Store,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useCart } from '~/hooks/useCart';
-import type { Product } from '~/types/product.type';
+import type { Product, ProductCategory } from '~/types/product.type';
+import productApi from '~/apis/product.api';
 
-// Mock branches - Replace with API call
-const mockBranches = [
-  { _id: 'branch-1', name: 'Chi nhánh Quận 1', stock: 15 },
-  { _id: 'branch-2', name: 'Chi nhánh Quận 3', stock: 8 },
-  { _id: 'branch-3', name: 'Chi nhánh Quận 7', stock: 22 },
-  { _id: 'branch-4', name: 'Chi nhánh Thủ Đức', stock: 0 }
-];
-
-// Mock product - Replace with API call
-const mockProduct: Product = {
-  _id: '1',
-  name: 'Royal Canin Mini Adult - Dog Food for Small Breeds',
-  description:
-    'Premium nutrition food specially designed for adult small breed dogs. Contains optimal protein content and L-carnitine to help maintain ideal weight. Enriched with EPA/DHA and glucosamine to support bone and joint health. The kibble is designed specifically for the miniature jaw to make it easy to grasp and chew.',
-  category: 'food',
-  price: 285000,
-  stock: 50,
-  image: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=800',
-  images: [
-    'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=800',
-    'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800',
-    'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=800'
-  ],
-  rating: 4.8,
-  sold: 156,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
-// Mock manufacturer and vaccine type (to be added to product type later)
-const mockManufacturer = 'Royal Canin SAS - France';
-const mockVaccineType = 'Core Vaccine'; // Only shown if category is vaccine
-
-const categoryLabels: Record<Product['category'], string> = {
+const categoryLabels: Record<ProductCategory, string> = {
   food: 'Food',
   medicine: 'Medicine',
   accessory: 'Accessory'
 };
 
-const categoryColors: Record<Product['category'], string> = {
+const categoryColors: Record<ProductCategory, string> = {
   food: 'bg-orange-100 text-orange-700',
   medicine: 'bg-green-100 text-green-700',
   accessory: 'bg-blue-100 text-blue-700'
@@ -55,40 +35,65 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart, cart } = useCart();
 
-  const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
-  useEffect(() => {
-    // TODO: Replace with actual API call
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setProduct(mockProduct);
+  // Fetch product details from API
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['product', id],
+    queryFn: () => productApi.getProductDetails(id!),
+    enabled: !!id
+  });
 
-        // Select first available branch
-        const availableBranch = mockBranches.find((b) => b.stock > 0);
-        if (availableBranch) {
-          setSelectedBranch(availableBranch._id);
-        }
+  // Transform API response to Product type
+  const product: Product | null = useMemo(() => {
+    if (!data?.data.data) return null;
 
-        // scroll to top
-        window.scrollTo(0, 0);
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        setLoading(false);
-      }
+    return {
+      _id: String(data.data.data.idSanPham),
+      name: data.data.data.tenSanPham,
+      description: data.data.data.loaiSanPham,
+      category:
+        data.data.data.loaiSanPham.toLowerCase() === 'thức ăn'
+          ? 'food'
+          : data.data.data.loaiSanPham.toLowerCase() === 'thuốc'
+            ? 'medicine'
+            : ('accessory' as ProductCategory),
+      price: parseFloat(data.data.data.giaBan),
+      stock: data.data.data.tonKho?.reduce((sum, stock) => sum + stock.soLuong, 0) || 0,
+      image: data.data.data.hinhAnh || 'https://placehold.co/800x800?text=No+Image',
+      images: data.data.data.hinhAnh ? [data.data.data.hinhAnh] : ['https://placehold.co/800x800?text=No+Image'],
+      rating: 4.5,
+      sold: data.data.data.tonKho?.reduce((sum, stock) => sum + stock.soLuongDaBan, 0) || 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
+  }, [data]);
 
-    fetchProduct();
-  }, [id]);
+  // Transform tonKho to branches
+  const branches = useMemo(() => {
+    if (!data?.data.data?.tonKho) return [];
+
+    return data.data.data.tonKho.map((item) => ({
+      _id: String(item.idChiNhanh),
+      name: item.tenChiNhanh,
+      stock: item.soLuong
+    }));
+  }, [data]);
+
+  // Select first available branch when product loads
+  useEffect(() => {
+    if (product && branches.length > 0) {
+      const availableBranch = branches.find((b) => b.stock > 0);
+      if (availableBranch) {
+        setSelectedBranch(availableBranch._id);
+      }
+      window.scrollTo(0, 0);
+    }
+  }, [product, branches]);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -116,7 +121,7 @@ const ProductDetail = () => {
   }, [isModalOpen]);
 
   const handleQuantityChange = (change: number) => {
-    const selectedBranchData = mockBranches.find((b) => b._id === selectedBranch);
+    const selectedBranchData = branches.find((b) => b._id === selectedBranch);
     const maxStock = selectedBranchData?.stock || 0;
 
     setQuantity((prev) => {
@@ -137,7 +142,7 @@ const ProductDetail = () => {
       return;
     }
 
-    const selectedBranchData = mockBranches.find((b) => b._id === selectedBranch);
+    const selectedBranchData = branches.find((b) => b._id === selectedBranch);
     if (!selectedBranchData) {
       toast.error('Invalid branch selected');
       return;
@@ -187,19 +192,20 @@ const ProductDetail = () => {
     }
   };
 
-  const selectedBranchData = mockBranches.find((b) => b._id === selectedBranch);
+  const selectedBranchData = branches.find((b) => b._id === selectedBranch);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='Container py-6 sm:py-8'>
-        <div className='flex h-96 items-center justify-center'>
-          <div className='h-10 w-10 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600 sm:h-12 sm:w-12'></div>
+        <div className='flex h-96 flex-col items-center justify-center gap-4'>
+          <Loader2 className='h-12 w-12 animate-spin text-orange-600' />
+          <p className='text-gray-600'>Loading product details...</p>
         </div>
       </div>
     );
   }
 
-  if (!product) {
+  if (isError || !product) {
     return (
       <div className='Container py-6 sm:py-8'>
         <div className='flex flex-col items-center justify-center py-12 sm:py-16'>
@@ -240,7 +246,15 @@ const ProductDetail = () => {
               className='w-full cursor-zoom-in transition-opacity hover:opacity-90'
             >
               <div className='aspect-square bg-orange-50 p-3 sm:p-4'>
-                <img src={images[selectedImage]} alt={product.name} className='h-full w-full object-cover' />
+                <img
+                  src={images[selectedImage]}
+                  alt={product.name}
+                  className='h-full w-full object-cover'
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://placehold.co/800x800?text=No+Image';
+                  }}
+                />
               </div>
             </button>
           </div>
@@ -257,7 +271,15 @@ const ProductDetail = () => {
                   }`}
                 >
                   <div className='aspect-square bg-orange-50 p-1.5 sm:p-2'>
-                    <img src={img} alt={`${product.name} ${index + 1}`} className='h-full w-full object-cover' />
+                    <img
+                      src={img}
+                      alt={`${product.name} ${index + 1}`}
+                      className='h-full w-full object-cover'
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://placehold.co/200x200?text=No+Image';
+                      }}
+                    />
                   </div>
                 </button>
               ))}
@@ -287,17 +309,17 @@ const ProductDetail = () => {
           </div>
 
           {/* Vaccine Type (if applicable) */}
-          {product.category === 'medicine' && mockVaccineType && (
+          {product.category === 'medicine' && (
             <div className='rounded-lg border border-green-200 bg-green-50 p-3 sm:p-4'>
               <p className='text-xs font-semibold text-green-800 sm:text-sm'>Vaccine Type</p>
-              <p className='text-sm text-green-700 sm:text-base'>{mockVaccineType}</p>
+              <p className='text-sm text-green-700 sm:text-base'>Core Vaccine</p>
             </div>
           )}
 
           {/* Manufacturer */}
           <div className='space-y-1'>
             <p className='text-xs font-semibold text-gray-700 sm:text-sm'>Manufacturer</p>
-            <p className='text-sm text-gray-600 sm:text-base'>{mockManufacturer}</p>
+            <p className='text-sm text-gray-600 sm:text-base'>-</p>
           </div>
 
           {/* Description */}
@@ -329,7 +351,7 @@ const ProductDetail = () => {
               <option value='' className='!cursor-pointer'>
                 -- Select Branch --
               </option>
-              {mockBranches.map((branch) => (
+              {branches.map((branch) => (
                 <option key={branch._id} value={branch._id} disabled={branch.stock === 0} className='!cursor-pointer'>
                   {branch.name} {branch.stock === 0 ? '(Out of stock)' : `(${branch.stock} items)`}
                 </option>
@@ -399,13 +421,13 @@ const ProductDetail = () => {
       {/* Image Modal */}
       {isModalOpen && (
         <div
-          className='bg-opacity-90 fixed inset-0 z-50 flex items-center justify-center bg-black'
+          className='bg-opacity-90 fixed inset-0 z-50 flex items-center justify-center bg-black/90'
           onClick={closeModal}
         >
           {/* Close button */}
           <button
             onClick={closeModal}
-            className='bg-opacity-70 hover:bg-opacity-90 absolute top-2 right-2 z-10 rounded-full bg-gray-800 p-2 text-white transition-all sm:top-4 sm:right-4'
+            className='bg-opacity-70 hover:bg-opacity-90 absolute top-2 right-2 z-10 cursor-pointer rounded-full bg-gray-800 p-2 text-white transition-all sm:top-4 sm:right-4'
             aria-label='Close'
           >
             <X className='h-6 w-6 sm:h-8 sm:w-8' />
@@ -418,7 +440,7 @@ const ProductDetail = () => {
                 e.stopPropagation();
                 navigateModal('prev');
               }}
-              className='bg-opacity-70 hover:bg-opacity-90 absolute left-2 z-10 rounded-full bg-gray-800 p-2 text-white transition-all sm:left-4 sm:p-3'
+              className='bg-opacity-70 hover:bg-opacity-90 absolute left-2 z-10 cursor-pointer rounded-full bg-gray-800 p-2 text-white transition-all sm:left-4 sm:p-3'
               aria-label='Previous image'
             >
               <ChevronLeft className='h-6 w-6 sm:h-8 sm:w-8' />
@@ -434,6 +456,10 @@ const ProductDetail = () => {
               src={images[modalImageIndex]}
               alt={`${product.name} - Image ${modalImageIndex + 1}`}
               className='max-h-full max-w-full object-contain'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://placehold.co/800x800?text=No+Image';
+              }}
             />
             {/* Image counter */}
             {images.length > 1 && (
@@ -450,7 +476,7 @@ const ProductDetail = () => {
                 e.stopPropagation();
                 navigateModal('next');
               }}
-              className='bg-opacity-70 hover:bg-opacity-90 absolute right-2 z-10 rounded-full bg-gray-800 p-2 text-white transition-all sm:right-4 sm:p-3'
+              className='bg-opacity-70 hover:bg-opacity-90 absolute right-2 z-10 cursor-pointer rounded-full bg-gray-800 p-2 text-white transition-all sm:right-4 sm:p-3'
               aria-label='Next image'
             >
               <ChevronRight className='h-6 w-6 sm:h-8 sm:w-8' />

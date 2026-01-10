@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, X, Store } from 'lucide-react';
+import { X, Store } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'react-toastify';
-import { useCart } from '~/hooks/useCart';
 import type { Product } from '~/types/product.type';
 
 interface ProductCardProps {
@@ -30,58 +28,12 @@ const categoryColors: Record<Product['category'], string> = {
 };
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart, cart } = useCart();
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
-
-  const openBranchModal = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Select first available branch by default
-    const availableBranch = mockBranches.find((b) => b.stock > 0);
-    if (availableBranch) {
-      setSelectedBranch(availableBranch._id);
-    }
-    setIsBranchModalOpen(true);
-  };
 
   const closeBranchModal = () => {
     setIsBranchModalOpen(false);
     setSelectedBranch('');
-  };
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!selectedBranch) {
-      toast.error('Please select a branch');
-      return;
-    }
-
-    const selectedBranchData = mockBranches.find((b) => b._id === selectedBranch);
-    if (!selectedBranchData) {
-      toast.error('Invalid branch selected');
-      return;
-    }
-
-    const cartBranchId = cart.items[0]?.branchId;
-    if (cartBranchId && cartBranchId !== selectedBranch) {
-      toast.error('Cannot add items from different branches to the cart.');
-      return;
-    }
-
-    addToCart({
-      productId: product._id,
-      productName: product.name,
-      productImage: product.image,
-      price: product.price,
-      quantity: 1,
-      branchId: selectedBranch,
-      branchName: selectedBranchData.name,
-      maxStock: selectedBranchData.stock
-    });
-
-    toast.success(`Added 1 product to cart!`);
-
-    closeBranchModal();
   };
 
   return (
@@ -97,6 +49,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
               src={product.image}
               alt={product.name}
               className='h-full w-full object-cover transition-transform duration-300'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://placehold.co/400x400?text=No+Image';
+              }}
             />
             {/* Badge for category */}
             <div className='absolute top-3 left-3'>
@@ -121,12 +77,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 {product.price.toLocaleString('vi-VN')}₫
               </span>
             </div>
-            <button
-              className='flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-lime-500 px-3 py-2 text-white transition-all duration-300 hover:scale-110 hover:bg-lime-600 sm:px-4'
-              onClick={openBranchModal}
-            >
-              <ShoppingCart className='h-5 w-5 sm:hidden' />
-              <span className='hidden font-semibold sm:inline'>Add to cart</span>
+            <button className='flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-lime-500 px-3 py-2 text-white transition-all duration-300 hover:scale-110 hover:bg-lime-600 sm:px-4'>
+              <span className='hidden font-semibold sm:inline'>View Detail</span>
             </button>
           </div>
         </div>
@@ -153,7 +105,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
             {/* Product Info */}
             <div className='mb-4 flex gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3'>
-              <img src={product.image} alt={product.name} className='h-16 w-16 rounded-lg object-cover' />
+              <img
+                src={product.image}
+                alt={product.name}
+                className='h-16 w-16 rounded-lg object-cover'
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://placehold.co/128x128?text=No+Image';
+                }}
+              />
               <div className='flex-1'>
                 <h4 className='line-clamp-2 text-sm font-semibold text-gray-800'>{product.name}</h4>
                 <p className='mt-1 text-base font-bold text-orange-600'>{product.price.toLocaleString('vi-VN')}₫</p>
@@ -187,14 +147,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 className='flex-1 cursor-pointer rounded-lg border-2 border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50'
               >
                 Cancel
-              </button>
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedBranch}
-                className='flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-lime-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-lime-600 disabled:cursor-not-allowed disabled:bg-gray-300'
-              >
-                <ShoppingCart className='h-4 w-4' />
-                <span className='hidden sm:inline'>Add to Cart</span>
               </button>
             </div>
           </div>

@@ -7,10 +7,8 @@ import type {
   GetMedicalRecordParams,
   CreatePrescriptionParams,
   CreatePrescriptionResponse,
-  GetPrescriptionsParams,
-  GetPrescriptionsResponse,
   GetPrescriptionByMedicalRecordParams,
-  PrescriptionDetail
+  GetPrescriptionsResponse
 } from '~/types/medical.type';
 
 const createMedicalRecord = (params: CreateMedicalRecordParams) => {
@@ -45,20 +43,17 @@ const getCustomerMedicalRecords = (params: GetMedicalRecordParams) => {
   );
 };
 
-const getPrescriptions = (params: GetPrescriptionsParams) => {
-  return http.get<ResponseApi<GetPrescriptionsResponse>>('http://localhost:9090/api/v1/prescriptions', {
-    params: {
-      pageNo: params.pageNo || 0,
-      pageSize: params.pageSize || 10,
-      sortBy: params.sortBy || 'idToa',
-      sortDir: params.sortDir || 'desc'
-    }
-  });
-};
-
 const getPrescriptionByMedicalRecord = (params: GetPrescriptionByMedicalRecordParams) => {
-  return http.get<ResponseApi<PrescriptionDetail>>(
-    `http://localhost:9090/api/v1/prescriptions/medical-record/${params.idHoSo}`
+  return http.get<ResponseApi<GetPrescriptionsResponse>>(
+    `http://localhost:9090/api/v1/prescriptions/ho-so/${params.idHoSo}`,
+    {
+      params: {
+        pageNo: params.pageNo,
+        pageSize: params.pageSize,
+        sortBy: params.sortBy,
+        sortDir: params.sortDir
+      }
+    }
   );
 };
 
@@ -67,7 +62,6 @@ const medicalApi = {
   createPrescription,
   getDoctorMedicalRecords,
   getCustomerMedicalRecords,
-  getPrescriptions,
   getPrescriptionByMedicalRecord
 };
 

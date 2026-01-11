@@ -107,13 +107,6 @@ export type CreatePrescriptionResponse = {
   };
 };
 
-export type GetPrescriptionsParams = {
-  pageNo?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
-};
-
 export type PrescriptionDetail = {
   idToa: number;
   maToa: string;
@@ -140,4 +133,8 @@ export type GetPrescriptionsResponse = {
 
 export type GetPrescriptionByMedicalRecordParams = {
   idHoSo: number;
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
 };

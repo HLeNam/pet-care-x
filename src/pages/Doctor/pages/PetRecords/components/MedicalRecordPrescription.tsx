@@ -10,7 +10,7 @@ const MedicalRecordPrescription = ({ idHoSo }: MedicalRecordPrescriptionProps) =
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: prescriptionData, isLoading } = usePrescriptionByMedicalRecord(idHoSo, true);
 
-  const prescription = prescriptionData?.data?.data;
+  const prescription = prescriptionData?.data?.data?.items?.[0];
 
   if (isLoading) {
     return (

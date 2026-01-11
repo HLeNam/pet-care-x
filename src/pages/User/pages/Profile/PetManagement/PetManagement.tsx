@@ -16,7 +16,7 @@ const PetManagement = () => {
   const createPetMutation = useCreatePet();
   const updatePetMutation = useUpdatePet();
   const deletePetMutation = useDeletePet();
-  
+
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
 
@@ -51,10 +51,10 @@ const PetManagement = () => {
           ten: formData.name,
           loai: formData.species,
           giong: formData.breed,
-          gioiTinh: formData.gender,
+          gioiTinh: formData.gender.toLowerCase() === 'male' ? 'Nam' : 'Nữ',
           ngaySinh: formData.birth_date,
           tinhTrangSucKhoe: formData.health_status,
-          idChu: profile!.idAccount
+          idKhachHang: profile!.userId
         });
         toast.success('Pet created successfully!');
       } else if (modalMode === 'edit' && selectedPet) {

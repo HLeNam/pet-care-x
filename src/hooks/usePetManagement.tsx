@@ -21,14 +21,14 @@ export const usePetList = ({ pageNo = 1, pageSize = 20 }: UsePetListParams = {})
   const { profile } = useAppContext();
 
   const query = useQuery({
-    queryKey: ['pets', 'by-owner', profile!.idAccount, pageNo, pageSize],
+    queryKey: ['pets', 'by-owner', profile!.userId, pageNo, pageSize],
     queryFn: () =>
       petApi.getPetByOwnerId({
-        idKhachHang: profile!.idAccount,
+        idKhachHang: profile!.userId,
         pageNo,
         pageSize
       }),
-    enabled: !!profile?.idAccount,
+    enabled: !!profile?.userId,
     staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
@@ -79,7 +79,7 @@ export const useCreatePet = () => {
     mutationFn: (params: CreatePetParams) => petApi.createPet(params),
     onSuccess: () => {
       // Invalidate and refetch pets list
-      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.idAccount] });
+      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.userId] });
     }
   });
 };

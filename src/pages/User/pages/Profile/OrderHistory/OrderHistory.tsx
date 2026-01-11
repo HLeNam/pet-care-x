@@ -34,6 +34,7 @@ const OrderHistory = () => {
       'Đang xử lý': { label: 'Pending', className: 'bg-yellow-100 text-yellow-700' },
       'Đã hủy': { label: 'Cancelled', className: 'bg-red-100 text-red-700' },
       'Đã thanh toán': { label: 'Paid', className: 'bg-emerald-100 text-emerald-700' },
+      'Đã hoàn thành': { label: 'Paid', className: 'bg-emerald-100 text-emerald-700' },
       'Chưa thanh toán': { label: 'Unpaid', className: 'bg-orange-100 text-orange-700' }
     };
 

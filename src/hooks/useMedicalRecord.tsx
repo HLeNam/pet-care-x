@@ -29,7 +29,7 @@ export const useDoctorMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: Us
     id: record.idHoSo,
     date: record.thoiGianKham,
     petName: record.tenThuCung,
-    doctor: profile?.name || 'Unknown',
+    doctor: profile?.name || record.tenBacSi || 'Unknown',
     symptoms: record.trieuChung,
     diagnosis: record.chuanDoan,
     treatment: '', // Not provided by API
@@ -69,7 +69,7 @@ export const useCustomerMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: 
     id: record.idHoSo,
     date: record.thoiGianKham,
     petName: record.tenThuCung,
-    doctor: profile?.name || 'Unknown',
+    doctor: profile?.name || record.tenBacSi || 'Unknown',
     symptoms: record.trieuChung,
     diagnosis: record.chuanDoan,
     treatment: '', // Not provided by API

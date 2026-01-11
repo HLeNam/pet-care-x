@@ -15,7 +15,7 @@ const MedicalHistory = () => {
 
   // Fetch medical records from API - hook handles all parsing
   const { medicalRecords, isLoading, isError, error } = useDoctorMedicalRecord({
-    userId: profile?.idAccount || 1,
+    userId: profile?.userId || 1,
     pageNo,
     pageSize
   });

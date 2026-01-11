@@ -68,7 +68,7 @@ const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) =
               <DollarSign className='mt-1 text-lime-600' size={20} />
               <div>
                 <p className='mb-1 text-xs text-gray-500'>Cost</p>
-                <p className='text-xl font-bold text-lime-600'>{record.cost.toLocaleString('vi-VN')}đ</p>
+                <p className='text-xl font-bold text-lime-600'>{(record?.cost ?? 0).toLocaleString('vi-VN')}đ</p>
               </div>
             </div>
           </div>

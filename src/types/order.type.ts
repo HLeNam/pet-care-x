@@ -43,3 +43,18 @@ export type OrderRequest = {
 };
 
 export type OrderResponse = Order;
+
+export type GetOrdersParams = {
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: keyof Order;
+  sortDir?: 'asc' | 'desc';
+};
+
+export type GetOrdersResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: Order[];
+};

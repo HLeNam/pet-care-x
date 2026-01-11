@@ -1,4 +1,4 @@
-import { History as HistoryIcon, Calendar, Loader2 } from 'lucide-react';
+import { History as HistoryIcon, Calendar, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
@@ -10,11 +10,11 @@ const MedicalHistory = () => {
   const { profile } = useAppContext();
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
-  const [pageNo] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageNo, setPageNo] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch medical records from API - hook handles all parsing
-  const { medicalRecords, isLoading, isError, error } = useDoctorMedicalRecord({
+  const { medicalRecords, pagination, isLoading, isError, error } = useDoctorMedicalRecord({
     userId: profile?.userId || 1,
     pageNo,
     pageSize
@@ -112,6 +112,70 @@ const MedicalHistory = () => {
                 <p className='mt-2 text-sm text-gray-500'>No medical records have been created by you.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && medicalRecords.length > 0 && (
+          <div className='flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4'>
+            <div className='flex items-center gap-2 text-sm text-gray-700'>
+              <span>
+                Showing {(pagination.pageNo - 1) * pagination.pageSize + 1} to{' '}
+                {Math.min(pagination.pageNo * pagination.pageSize, pagination.totalElements)} of{' '}
+                {pagination.totalElements} results
+              </span>
+            </div>
+
+            <div className='flex items-center gap-2'>
+              {/* Previous Button */}
+              <button
+                onClick={() => setPageNo((prev) => Math.max(1, prev - 1))}
+                disabled={pagination.pageNo === 1}
+                className='flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white'
+              >
+                <ChevronLeft className='h-4 w-4' />
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className='flex items-center gap-1'>
+                {Array.from({ length: pagination.totalPage }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    return (
+                      page === 1 ||
+                      page === pagination.totalPage ||
+                      (page >= pagination.pageNo - 1 && page <= pagination.pageNo + 1)
+                    );
+                  })
+                  .map((page, index, array) => (
+                    <div key={page} className='flex items-center'>
+                      {/* Show ellipsis if there's a gap */}
+                      {index > 0 && array[index - 1] !== page - 1 && <span className='px-2 text-gray-500'>...</span>}
+                      <button
+                        onClick={() => setPageNo(page)}
+                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          page === pagination.pageNo
+                            ? 'bg-orange-500 text-white hover:bg-orange-600'
+                            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => setPageNo((prev) => Math.min(pagination.totalPage, prev + 1))}
+                disabled={pagination.pageNo === pagination.totalPage}
+                className='flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white'
+              >
+                Next
+                <ChevronRight className='h-4 w-4' />
+              </button>
+            </div>
           </div>
         )}
       </div>

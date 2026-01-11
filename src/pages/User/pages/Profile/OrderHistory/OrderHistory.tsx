@@ -31,8 +31,6 @@ const OrderHistory = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; className: string }> = {
-      'Đã hoàn thành': { label: 'Completed', className: 'bg-green-100 text-green-700' },
-      'Đang giao hàng': { label: 'Shipping', className: 'bg-blue-100 text-blue-700' },
       'Đang xử lý': { label: 'Pending', className: 'bg-yellow-100 text-yellow-700' },
       'Đã hủy': { label: 'Cancelled', className: 'bg-red-100 text-red-700' },
       'Đã thanh toán': { label: 'Paid', className: 'bg-emerald-100 text-emerald-700' },

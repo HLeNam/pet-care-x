@@ -38,7 +38,7 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
       return;
     }
 
-    if (!profile?.idAccount) {
+    if (!profile?.userId) {
       toast.error('Doctor information is missing');
       return;
     }

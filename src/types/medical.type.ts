@@ -60,6 +60,6 @@ export type GetDoctorMedicalRecordsResponse = {
   pageNo: number;
   pageSize: number;
   totalPage: number;
-  totalElement: number;
+  totalElements: number;
   items: GetDoctorMedicalRecordItemResponse[];
 };

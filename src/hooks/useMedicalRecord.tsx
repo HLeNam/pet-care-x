@@ -38,14 +38,16 @@ export const useDoctorMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: Us
     nextAppointment: record.ngayTaiKham || undefined
   }));
 
+  const pagination = {
+    pageNo: query.data?.data?.data?.pageNo || pageNo,
+    pageSize: query.data?.data?.data?.pageSize || pageSize,
+    totalPage: query.data?.data?.data?.totalPage || 0,
+    totalElements: query.data?.data?.data?.totalElements || 0
+  };
+
   return {
     medicalRecords,
-    pagination: {
-      pageNo: query.data?.data?.data?.pageNo || pageNo,
-      pageSize: query.data?.data?.data?.pageSize || pageSize,
-      totalPage: query.data?.data?.data?.totalPage || 0,
-      totalElement: query.data?.data?.data?.totalElement || 0
-    },
+    pagination,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
@@ -78,14 +80,16 @@ export const useCustomerMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: 
     nextAppointment: record.ngayTaiKham || undefined
   }));
 
+  const pagination = {
+    pageNo: query.data?.data?.data?.pageNo || pageNo,
+    pageSize: query.data?.data?.data?.pageSize || pageSize,
+    totalPage: query.data?.data?.data?.totalPage || 0,
+    totalElements: query.data?.data?.data?.totalElements || 0
+  };
+
   return {
     medicalRecords,
-    pagination: {
-      pageNo: query.data?.data?.data?.pageNo || pageNo,
-      pageSize: query.data?.data?.data?.pageSize || pageSize,
-      totalPage: query.data?.data?.data?.totalPage || 0,
-      totalElement: query.data?.data?.data?.totalElement || 0
-    },
+    pagination,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,

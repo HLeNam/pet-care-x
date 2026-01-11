@@ -138,7 +138,7 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
       await createAppointmentMutation.mutateAsync({
         idChiNhanh: formData.branch_id!,
         tenChiNhanh: selectedBranch.name,
-        idKhachHang: profile!.idAccount,
+        idKhachHang: profile!.userId,
         tenKhachHang: profile?.name || 'admin',
         idThuCung: formData.pet_id!,
         tenThuCung: selectedPet.name,

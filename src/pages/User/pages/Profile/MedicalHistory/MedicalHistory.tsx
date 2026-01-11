@@ -15,7 +15,7 @@ const MedicalHistory = () => {
 
   // Fetch medical records from API
   const { medicalRecords, isLoading, isError, error } = useCustomerMedicalRecord({
-    userId: profile?.idAccount || 1,
+    userId: profile?.userId || 1,
     pageNo,
     pageSize
   });

@@ -51,6 +51,7 @@ export type GetDoctorMedicalRecordItemResponse = {
   trieuChung: string;
   chuanDoan: string;
   ngayTaiKham: string | null;
+  tenBacSi: string;
   idBacSi: number;
   giaKham: number;
 };

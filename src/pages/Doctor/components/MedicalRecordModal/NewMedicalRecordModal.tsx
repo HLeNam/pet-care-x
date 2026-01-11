@@ -65,7 +65,7 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
         trieuChung: result.data.symptoms,
         chuanDoan: result.data.diagnosis,
         ngayTaiKham: result.data.nextAppointment || new Date().toISOString().split('T')[0],
-        idBacSi: profile.idAccount
+        idBacSi: profile.userId
       });
 
       toast.success('Medical record created successfully!');

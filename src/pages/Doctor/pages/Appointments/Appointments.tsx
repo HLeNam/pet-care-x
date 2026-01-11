@@ -107,6 +107,17 @@ const Appointments = () => {
     setAppointmentToDelete(null);
   };
 
+  const translateStatusToEnglish = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'đã xác nhận': 'Confirmed',
+      'đã hoàn thành': 'Completed',
+      'chờ xác nhận': 'Pending',
+      'đã đặt': 'Booked',
+      'đã hủy': 'Cancelled'
+    };
+    return statusMap[status] || status;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'đã xác nhận':
@@ -202,7 +213,7 @@ const Appointments = () => {
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(appointment.trangThai)}`}
                       >
-                        {appointment.trangThai}
+                        {translateStatusToEnglish(appointment.trangThai.toLowerCase())}
                       </span>
                     </td>
                     <td className='px-6 py-4'>

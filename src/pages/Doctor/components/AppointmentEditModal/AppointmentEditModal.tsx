@@ -74,9 +74,11 @@ const AppointmentEditModal = ({ isOpen, appointment, onClose, onSave, onChange }
                 >
                   {/* <option value='Chờ xác nhận'>Chờ xác nhận</option> */}
                   {/* <option value='Đã xác nhận'>Đã xác nhận</option> */}
-                  <option value='Đã Đặt'>Đã Đặt</option>
-                  <option value='Đã Hoàn Thành'>Đã Hoàn Thành</option>
+                  {/* <option value='Đã Đặt'>Đã Đặt</option>
+                  <option value='Đã Hoàn Thành'>Đã Hoàn Thành</option> */}
                   {/* <option value='Đã hủy'>Đã hủy</option> */}
+                  <option value='Đã Đặt'>Booked</option>
+                  <option value='Đã Hoàn Thành'>Completed</option>
                 </select>
               </div>
             </div>

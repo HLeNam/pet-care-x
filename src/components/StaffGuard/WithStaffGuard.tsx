@@ -14,7 +14,12 @@ function withStaffGuard<P>(Component: React.ComponentType<P>, redirectTo: string
     const { isAuthenticated, profile } = useAppContext();
 
     const isAccessibleToDoctor =
-      (isAuthenticated && profile?.roles.includes('ROLE_STAFF')) || profile?.roles.includes('ROLE_ADMIN');
+      isAuthenticated &&
+      (profile?.roles.includes('ROLE_STAFF') ||
+        profile?.roles.includes('ROLE_ADMIN') ||
+        profile?.roles.includes('ROLE_MANAGER') ||
+        profile?.roles.includes('ROLE_DOCTOR') ||
+        profile?.roles.includes('ROLE_RECEPTIONIST'));
 
     if (!isAccessibleToDoctor) {
       return <Navigate to={redirectTo} state={{ from: location }} replace />;

@@ -13,10 +13,10 @@ function withManagerGuard<P>(Component: React.ComponentType<P>, redirectTo: stri
     const location = useLocation();
     const { isAuthenticated, profile } = useAppContext();
 
-    const isAccessibleToDoctor =
-      (isAuthenticated && profile?.roles.includes('ROLE_MANAGER')) || profile?.roles.includes('ROLE_ADMIN');
+    const isAccessibleToManager =
+      isAuthenticated && (profile?.roles.includes('ROLE_MANAGER') || profile?.roles.includes('ROLE_ADMIN'));
 
-    if (!isAccessibleToDoctor) {
+    if (!isAccessibleToManager) {
       return <Navigate to={redirectTo} state={{ from: location }} replace />;
     }
 

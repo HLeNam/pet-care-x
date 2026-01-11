@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, CreditCard, MapPin, Phone, User, FileText, CheckCircle2 } from 'lucide-react';
 import { useCart } from '~/hooks/useCart';
@@ -11,12 +11,17 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const [formData, setFormData] = useState({
     tenNguoiNhan: '',
     soDienThoaiNguoiNhan: '',
     diaChiGiaoHang: '',
     ghiChu: '',
-    hinhThucThanhToan: 'CASH'
+    // hinhThucThanhToan: 'CASH'
+    hinhThucThanhToan: 'Tiền mặt'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -261,9 +266,12 @@ const Checkout = () => {
                     onChange={handleInputChange}
                     className='w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none'
                   >
-                    <option value='CASH'>Cash on Delivery</option>
+                    {/* <option value='CASH'>Cash on Delivery</option>
                     <option value='CARD'>Credit/Debit Card</option>
-                    <option value='BANK_TRANSFER'>Bank Transfer</option>
+                    <option value='BANK_TRANSFER'>Bank Transfer</option> */}
+                    <option value='Tiền mặt'>Cash on Delivery</option>
+                    <option value='Thẻ tín dụng'>Credit/Debit Card</option>
+                    <option value='Chuyển khoản'>Bank Transfer</option>
                   </select>
                 </div>
               </div>

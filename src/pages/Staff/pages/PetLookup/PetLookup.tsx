@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, FileText, User, Phone, Calendar, X } from 'lucide-react';
 import { useCustomerByPhone } from '~/hooks/useCustomerByPhone';
-import { usePetsByOwner } from '~/hooks/usePetsByOwner';
+import { usePetsByOwnerInfinite } from '~/hooks/usePetsByOwnerInfinite';
 import { usePetDetails } from '~/hooks/usePetDetails';
 import { usePetMedicalRecords } from '~/hooks/usePetMedicalRecords';
 import useQueryParams from '~/hooks/useQueryParams';
 import { Pagination } from '~/pages/User/components/Pagination';
+import { InfiniteSelect } from '~/components/InfiniteSelect';
 import type { GetCustomerByPhoneResponse } from '~/types/customer.type';
 
 // Helper function to format doctor name
@@ -22,6 +23,7 @@ const PetLookup = () => {
   const [selectedPet, setSelectedPet] = useState<number | null>(null);
   const [enableSearch, setEnableSearch] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<number | null>(null);
+  const [petSearchQuery, setPetSearchQuery] = useState('');
 
   // Query params for pagination
   const { getParam, updateParams } = useQueryParams();
@@ -38,11 +40,26 @@ const PetLookup = () => {
     enabled: enableSearch
   });
 
-  // React Query hook to get pets by owner ID
-  const { data: filteredPets = [], isLoading: isLoadingPets } = usePetsByOwner({
+  // React Query hook to get pets by owner ID with infinite scroll
+  const {
+    data: petsData,
+    isLoading: isLoadingPets,
+    isFetchingNextPage: isFetchingNextPets,
+    hasNextPage: hasNextPets,
+    fetchNextPage: fetchNextPets
+  } = usePetsByOwnerInfinite({
     idKhachHang: customerInfo?.idKhachHang || null,
-    enabled: !!customerInfo
+    enabled: !!customerInfo,
+    pageSize: 20
   });
+
+  // Flatten all pets from pages
+  const filteredPets = useMemo(() => {
+    if (!petsData?.pages) return [];
+    return petsData.pages.flatMap((page) => page.items);
+  }, [petsData]);
+
+  const totalPets = petsData?.pages[0]?.totalItems || 0;
 
   // React Query hook to get pet details
   const { data: petDetailsData, isLoading: isLoadingPetDetails } = usePetDetails({
@@ -159,23 +176,30 @@ const PetLookup = () => {
             <label htmlFor='pet' className='mb-2 block text-sm font-medium text-gray-700'>
               Select Pet <span className='text-red-500'>*</span>
             </label>
-            <select
-              id='pet'
-              value={selectedPet || ''}
-              onChange={(e) => setSelectedPet(Number(e.target.value) || null)}
+            <InfiniteSelect
+              value={selectedPet ? String(selectedPet) : ''}
+              onChange={(value) => setSelectedPet(Number(value) || null)}
+              items={filteredPets.map((pet) => ({
+                id: pet.pet_id,
+                label: pet.name,
+                subLabel: pet.pet_code
+              }))}
+              isLoading={isLoadingPets}
+              isFetchingNextPage={isFetchingNextPets}
+              hasNextPage={hasNextPets ?? false}
+              onLoadMore={() => fetchNextPets()}
               disabled={!customerInfo || isLoadingOwner || isLoadingPets}
-              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>{isLoadingPets ? 'Loading pets...' : '-- Select Pet --'}</option>
-              {filteredPets.map((pet) => (
-                <option key={pet.pet_id} value={pet.pet_id}>
-                  {pet.name} ({pet.pet_code})
-                </option>
-              ))}
-            </select>
+              placeholder='-- Select Pet --'
+              totalCount={totalPets}
+              searchQuery={petSearchQuery}
+              onSearchChange={setPetSearchQuery}
+              emptyMessage='No pets found for this owner'
+              loadingMessage='Loading pets...'
+              getSearchText={(item) => item.label}
+            />
             {isLoadingPets && <p className='mt-2 text-sm text-gray-500'>Loading pets...</p>}
             {!isLoadingPets && customerInfo && filteredPets.length > 0 && (
-              <p className='mt-2 text-sm text-green-600'>{filteredPets.length} pet(s) available</p>
+              <p className='mt-2 text-sm text-green-600'>{totalPets} pet(s) available</p>
             )}
             {!isLoadingPets && customerInfo && filteredPets.length === 0 && (
               <p className='mt-2 text-sm text-red-600'>No pets found for this owner</p>

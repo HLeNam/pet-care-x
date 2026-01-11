@@ -146,13 +146,11 @@ const MedicalHistory = () => {
                 </div>
 
                 {/* Treatment Details */}
-                {/* <div className='rounded-lg bg-gray-50 p-4'>
-                  <h4 className='mb-2 text-sm font-medium text-gray-700'>Treatment Methods:</h4>
-                  <p className='text-sm text-gray-600'>{record.treatment}</p>
-                </div> */}
-
                 <div className='rounded-lg bg-gray-50 p-4'>
-                  <p className='text-sm text-gray-600'>{record.prescriptions}</p>
+                  <h4 className='mb-2 text-sm font-bold text-gray-700'>Symptoms:</h4>
+                  <p className='text-sm text-gray-600'>{record.symptoms}</p>
+                  <h4 className='mt-2 text-sm font-bold text-gray-700'>Diagnosis:</h4>
+                  <p className='text-sm text-gray-600'>{record.diagnosis}</p>
                 </div>
 
                 {/* Prescription */}

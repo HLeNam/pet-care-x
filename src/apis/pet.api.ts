@@ -41,7 +41,10 @@ const getPetMedicalRecords = (params: GetPetMedicalRecordsParams) => {
 };
 
 const createPet = (params: CreatePetParams) => {
-  return Promise.reject(new Error('API endpoint not yet implemented'));
+  console.log('🚀 ~ createPet ~ params:', JSON.stringify(params, null, 2));
+  return http.post<ResponseApi<unknown>>('http://localhost:9090/api/thucung/create', {
+    ...params
+  });
 };
 
 const updatePet = (params: UpdatePetParams) => {

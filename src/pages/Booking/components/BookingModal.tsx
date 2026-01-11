@@ -143,7 +143,7 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
         idThuCung: formData.pet_id!,
         tenThuCung: selectedPet.name,
         ngayHen: formData.booking_date!,
-        gioBatDau: formData.booking_time,
+        gioBatDau: formData.booking_time + ':00',
         idNhanVien: formData.doctor_id!,
         tenBacSi: selectedDoctor.name
       });

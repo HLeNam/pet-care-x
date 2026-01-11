@@ -109,7 +109,7 @@ const Checkout = () => {
   // Success message
   if (isOrderSuccess) {
     return (
-      <div className='Container py-6 sm:py-8 lg:py-12'>
+      <div className='container mx-auto px-4 py-6 sm:py-8 lg:py-12'>
         <div className='flex flex-col items-center justify-center py-12 sm:py-16 lg:py-20'>
           <CheckCircle2 className='mb-4 h-20 w-20 text-green-500 sm:h-24 sm:w-24 lg:h-28 lg:w-28' />
           <h2 className='mb-2 text-2xl font-semibold text-gray-800 sm:text-3xl lg:text-4xl'>Order Successful!</h2>
@@ -123,7 +123,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className='Container py-4 sm:py-6 lg:py-8 xl:py-10'>
+    <div className='container mx-auto px-4 py-4 sm:py-6 lg:py-8 xl:py-10'>
       {/* Header */}
       <div className='mb-4 sm:mb-6 lg:mb-8'>
         <button

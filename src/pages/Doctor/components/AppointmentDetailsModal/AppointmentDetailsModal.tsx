@@ -24,7 +24,8 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
       'đã hoàn thành': 'Completed',
       'chờ xác nhận': 'Pending',
       'đã đặt': 'Booked',
-      'đã hủy': 'Cancelled'
+      'đã hủy': 'Cancelled',
+      'chưa hoàn thành': 'Incomplete'
     };
     return statusMap[status] || status;
   };
@@ -35,6 +36,7 @@ const AppointmentDetailsModal = ({ isOpen, appointment, onClose }: AppointmentDe
       case 'đã hoàn thành':
         return 'bg-green-100 text-green-800';
       case 'chờ xác nhận':
+      case 'chưa hoàn thành':
       case 'đã đặt':
         return 'bg-yellow-100 text-yellow-800';
       case 'đã hủy':

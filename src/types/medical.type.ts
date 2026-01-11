@@ -35,6 +35,7 @@ export type CreateMedicalRecordParams = {
 export type CreateMedicalRecordResponse = {
   status: number;
   message: string;
+  data?: number;
 };
 
 export type GetMedicalRecordParams = {
@@ -60,6 +61,83 @@ export type GetDoctorMedicalRecordsResponse = {
   pageNo: number;
   pageSize: number;
   totalPage: number;
-  totalElement: number;
+  totalElements: number;
   items: GetDoctorMedicalRecordItemResponse[];
+};
+
+export type PrescriptionItem = {
+  idSanPham: number;
+  maSanPham: string;
+  tenSanPham: string;
+  giaBan: string;
+  soLuong: number;
+};
+
+export type PrescriptionProductItem = {
+  idSanPham: number;
+  soLuong: number;
+  tenSanPham: string;
+  donGia: number;
+};
+
+export type CreatePrescriptionParams = {
+  idHoSo: number;
+  idThuCung: number;
+  thoiGianKham: string;
+  toaSanPhamList: PrescriptionProductItem[];
+};
+
+export type CreatePrescriptionResponse = {
+  status: number;
+  message: string;
+  data: {
+    idToa: number;
+    maToa: string;
+    thoiGianKham: string;
+    idHoSo: number;
+    idThuCung: number;
+    tenThuCung: string;
+    toaSanPhamList: {
+      idSanPham: number;
+      tenSanPham: string;
+      soLuong: number;
+      donGia: number;
+      thanhTien: number;
+    }[];
+  };
+};
+
+export type GetPrescriptionsParams = {
+  pageNo?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+};
+
+export type PrescriptionDetail = {
+  idToa: number;
+  maToa: string;
+  thoiGianKham: string;
+  idHoSo: number;
+  idThuCung: number;
+  tenThuCung: string;
+  toaSanPhamList: {
+    idSanPham: number;
+    tenSanPham: string;
+    soLuong: number;
+    donGia: number;
+    thanhTien: number;
+  }[];
+};
+
+export type GetPrescriptionsResponse = {
+  pageNo: number;
+  pageSize: number;
+  totalPage: number;
+  totalElements: number;
+  items: PrescriptionDetail[];
+};
+
+export type GetPrescriptionByMedicalRecordParams = {
+  idHoSo: number;
 };

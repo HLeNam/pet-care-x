@@ -1,9 +1,10 @@
-import { X, FileText, Calendar as CalendarIcon, Stethoscope } from 'lucide-react';
-import { useState } from 'react';
+import { X, FileText, Calendar as CalendarIcon, Stethoscope, Pill, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { MedicalRecordFormData } from '~/types/medical.type';
-import { useCreateMedicalRecord } from '~/hooks/useCreateMedicalRecord';
+import { MedicalRecordFormData, type PrescriptionItem } from '~/types/medical.type';
+import { useCreateMedicalRecord, useCreatePrescription } from '~/hooks/useCreateMedicalRecord';
 import { useAppContext } from '~/contexts';
+import { useSearchMedicines } from '~/hooks/useProduct';
 
 interface NewMedicalRecordModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface NewMedicalRecordModalProps {
 const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRecordModalProps) => {
   const { profile } = useAppContext();
   const createMedicalRecordMutation = useCreateMedicalRecord();
+  const createPrescriptionMutation = useCreatePrescription();
 
   const [formData, setFormData] = useState<MedicalRecordFormData>({
     symptoms: '',
@@ -22,6 +24,30 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
     nextAppointment: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Prescription states
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedMedicine, setSelectedMedicine] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(1);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Search medicines
+  const { medicines, isLoading: isSearching } = useSearchMedicines({
+    keyword: searchKeyword,
+    pageNo: 0,
+    pageSize: 10,
+    enabled: searchKeyword.length > 0
+  });
+
+  // Hide search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowSearchResults(false);
+    if (showSearchResults) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showSearchResults]);
 
   const handleChange = (field: keyof MedicalRecordFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -31,15 +57,73 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
     }
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchKeyword(value);
+    setShowSearchResults(value.length > 0);
+  };
+
+  const handleSelectMedicine = (medicine: (typeof medicines)[number]) => {
+    setSelectedMedicine(medicine.tenSanPham);
+    setSearchKeyword(medicine.tenSanPham);
+    setShowSearchResults(false);
+  };
+
+  const handleAddPrescription = () => {
+    const medicine = medicines.find((m) => m.tenSanPham === selectedMedicine);
+    if (!medicine) {
+      toast.error('Please select a medicine from the search results');
+      return;
+    }
+
+    if (quantity < 1) {
+      toast.error('Quantity must be at least 1');
+      return;
+    }
+
+    // Check if medicine already exists in prescriptions
+    const existingIndex = prescriptions.findIndex((p) => p.idSanPham === medicine.idSanPham);
+    if (existingIndex !== -1) {
+      // Update quantity
+      const updated = [...prescriptions];
+      updated[existingIndex].soLuong += quantity;
+
+      setPrescriptions(updated);
+      //   toast.success('Updated medicine quantity');
+    } else {
+      // Add new
+      setPrescriptions([
+        ...prescriptions,
+        {
+          idSanPham: medicine.idSanPham,
+          maSanPham: medicine.maSanPham,
+          tenSanPham: medicine.tenSanPham,
+          giaBan: medicine.giaBan,
+          soLuong: quantity
+        }
+      ]);
+      //   toast.success('Added medicine to prescription');
+    }
+
+    // Reset
+    setSearchKeyword('');
+    setSelectedMedicine('');
+    setQuantity(1);
+  };
+
+  const handleRemovePrescription = (idSanPham: number) => {
+    setPrescriptions(prescriptions.filter((p) => p.idSanPham !== idSanPham));
+    // toast.success('Removed medicine from prescription');
+  };
+
+  const handleUpdateQuantity = (idSanPham: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    setPrescriptions(prescriptions.map((p) => (p.idSanPham === idSanPham ? { ...p, soLuong: newQuantity } : p)));
+  };
+
   const handleSubmit = async () => {
     // Validate required fields
     if (!petId) {
       toast.error('Pet ID is missing');
-      return;
-    }
-
-    if (!profile?.idAccount) {
-      toast.error('Doctor information is missing');
       return;
     }
 
@@ -58,17 +142,44 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
     }
 
     try {
+      const currentTime = new Date().toISOString();
+
       // Call API to create medical record
-      await createMedicalRecordMutation.mutateAsync({
-        thoiGianKham: new Date().toISOString(),
+      const medicalRecordResponse = await createMedicalRecordMutation.mutateAsync({
+        thoiGianKham: currentTime,
         idThuCung: petId,
         trieuChung: result.data.symptoms,
         chuanDoan: result.data.diagnosis,
         ngayTaiKham: result.data.nextAppointment || new Date().toISOString().split('T')[0],
-        idBacSi: profile.userId
+        idBacSi: profile!.userId || 1
       });
 
-      toast.success('Medical record created successfully!');
+      // Get the medical record ID from response
+      const idHoSo = medicalRecordResponse?.data?.data;
+
+      // Call API to save prescriptions if any
+      if (prescriptions.length > 0 && idHoSo) {
+        try {
+          await createPrescriptionMutation.mutateAsync({
+            idHoSo: Number(idHoSo),
+            idThuCung: petId,
+            thoiGianKham: currentTime,
+            toaSanPhamList: prescriptions.map((p) => ({
+              idSanPham: p.idSanPham,
+              soLuong: p.soLuong,
+              tenSanPham: p.tenSanPham,
+              donGia: parseFloat(p.giaBan)
+            }))
+          });
+          toast.success('Medical record created successfully!');
+        } catch (prescriptionError) {
+          // Medical record created but prescription failed
+          console.error('Failed to create prescription:', prescriptionError);
+          toast.warning('Medical record created, but prescription creation failed.');
+        }
+      } else {
+        toast.success('Medical record created successfully!');
+      }
 
       // Reset form and errors
       setFormData({
@@ -77,6 +188,10 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
         nextAppointment: ''
       });
       setErrors({});
+      setPrescriptions([]);
+      setSearchKeyword('');
+      setSelectedMedicine('');
+      setQuantity(1);
       onClose();
     } catch (error: unknown) {
       const errorMessage =
@@ -159,6 +274,140 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
               </div>
             </div>
 
+            {/* Prescription Section */}
+            <div className='rounded-lg border border-gray-200 bg-blue-50 p-4'>
+              <h3 className='mb-4 flex items-center text-lg font-semibold text-gray-900'>
+                <Pill className='mr-2 h-5 w-5 text-blue-500' />
+                Prescription
+              </h3>
+              <div className='space-y-4'>
+                {/* Medicine Search */}
+                <div className='relative'>
+                  <label className='mb-1 block text-sm font-medium text-gray-700'>Search Medicine</label>
+                  <div className='relative'>
+                    <input
+                      type='text'
+                      value={searchKeyword}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSearchResults(searchKeyword.length > 0);
+                      }}
+                      placeholder='Type medicine name...'
+                      className='w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none'
+                    />
+                    <Search className='absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400' />
+                  </div>
+
+                  {/* Search Results Dropdown */}
+                  {showSearchResults && searchKeyword.length > 0 && (
+                    <div
+                      className='absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg'
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {isSearching ? (
+                        <div className='p-4 text-center text-sm text-gray-500'>Searching...</div>
+                      ) : medicines.length > 0 ? (
+                        medicines.map((medicine) => (
+                          <button
+                            key={medicine.idSanPham}
+                            onClick={() => handleSelectMedicine(medicine)}
+                            className='w-full cursor-pointer border-b border-gray-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-blue-50'
+                          >
+                            <div className='font-medium text-gray-900'>{medicine.tenSanPham}</div>
+                            <div className='mt-1 flex items-center justify-between text-xs text-gray-600'>
+                              <span>Code: {medicine.maSanPham}</span>
+                              <span className='font-semibold text-blue-600'>
+                                {parseFloat(medicine.giaBan).toLocaleString('vi-VN')}đ
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className='p-4 text-center text-sm text-gray-500'>No medicines found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quantity Input */}
+                {selectedMedicine && (
+                  <div className='flex gap-3'>
+                    <div className='flex-1'>
+                      <label className='mb-1 block text-sm font-medium text-gray-700'>Quantity</label>
+                      <input
+                        type='number'
+                        min='1'
+                        value={quantity}
+                        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                        className='w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none'
+                      />
+                    </div>
+                    <div className='flex items-end'>
+                      <button
+                        onClick={handleAddPrescription}
+                        className='flex cursor-pointer items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600'
+                      >
+                        <Plus className='h-4 w-4' />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Prescriptions List */}
+                {prescriptions.length > 0 && (
+                  <div className='mt-4 rounded-lg border border-blue-200 bg-white p-3'>
+                    <h4 className='mb-2 text-sm font-semibold text-gray-700'>Selected Medicines</h4>
+                    <div className='space-y-2'>
+                      {prescriptions.map((prescription) => (
+                        <div
+                          key={prescription.idSanPham}
+                          className='flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3'
+                        >
+                          <div className='flex-1'>
+                            <div className='font-medium text-gray-900'>{prescription.tenSanPham}</div>
+                            <div className='mt-1 text-xs text-gray-600'>
+                              {parseFloat(prescription.giaBan).toLocaleString('vi-VN')}đ × {prescription.soLuong} ={' '}
+                              <span className='font-semibold text-blue-600'>
+                                {(parseFloat(prescription.giaBan) * prescription.soLuong).toLocaleString('vi-VN')}đ
+                              </span>
+                            </div>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            <input
+                              type='number'
+                              min='1'
+                              value={prescription.soLuong}
+                              onChange={(e) =>
+                                handleUpdateQuantity(prescription.idSanPham, parseInt(e.target.value) || 1)
+                              }
+                              className='w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none'
+                            />
+                            <button
+                              onClick={() => handleRemovePrescription(prescription.idSanPham)}
+                              className='cursor-pointer rounded p-1.5 text-red-600 transition-colors hover:bg-red-50'
+                            >
+                              <Trash2 className='h-4 w-4' />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <div className='mt-3 flex justify-between border-t border-gray-200 pt-2 text-sm font-semibold'>
+                        <span>Total:</span>
+                        <span className='text-blue-600'>
+                          {prescriptions
+                            .reduce((sum, p) => sum + parseFloat(p.giaBan) * p.soLuong, 0)
+                            .toLocaleString('vi-VN')}
+                          đ
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Follow-up Information */}
             <div className='rounded-lg border border-gray-200 bg-green-50 p-4'>
               <h3 className='mb-4 flex items-center text-lg font-semibold text-gray-900'>
@@ -188,18 +437,20 @@ const NewMedicalRecordModal = ({ isOpen, petId, petName, onClose }: NewMedicalRe
           <div className='flex justify-end gap-3'>
             <button
               onClick={onClose}
-              disabled={createMedicalRecordMutation.isPending}
+              disabled={createMedicalRecordMutation.isPending || createPrescriptionMutation.isPending}
               className='rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              disabled={createMedicalRecordMutation.isPending}
+              disabled={createMedicalRecordMutation.isPending || createPrescriptionMutation.isPending}
               className='flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-400'
             >
               <FileText className='h-4 w-4' />
-              {createMedicalRecordMutation.isPending ? 'Saving...' : 'Save Medical Record'}
+              {createMedicalRecordMutation.isPending || createPrescriptionMutation.isPending
+                ? 'Saving...'
+                : 'Save Medical Record'}
             </button>
           </div>
         </div>

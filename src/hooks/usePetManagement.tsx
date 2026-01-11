@@ -42,7 +42,7 @@ export const usePetList = ({ pageNo = 1, pageSize = 20 }: UsePetListParams = {})
     gender: 'Male', // API không trả về, giá trị mặc định
     birth_date: '', // API không trả về, để trống
     health_status: '', // API không trả về, để trống
-    owner_id: profile!.idAccount
+    owner_id: profile!.userId
   }));
 
   return {
@@ -95,7 +95,7 @@ export const useUpdatePet = () => {
     mutationFn: (params: UpdatePetParams) => petApi.updatePet(params),
     onSuccess: (_, variables) => {
       // Invalidate pets list and specific pet detail
-      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.idAccount] });
+      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.userId] });
       queryClient.invalidateQueries({ queryKey: ['pet-detail', variables.idThuCung] });
     }
   });
@@ -112,7 +112,7 @@ export const useDeletePet = () => {
     mutationFn: (params: DeletePetParams) => petApi.deletePet(params),
     onSuccess: (_, variables) => {
       // Invalidate pets list and remove pet detail from cache
-      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.idAccount] });
+      queryClient.invalidateQueries({ queryKey: ['pets', 'by-owner', profile!.userId] });
       queryClient.removeQueries({ queryKey: ['pet-detail', variables.idThuCung] });
     }
   });

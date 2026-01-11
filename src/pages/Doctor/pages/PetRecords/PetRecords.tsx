@@ -8,7 +8,9 @@ import {
   CalendarDays,
   HeartPulse,
   PawPrint,
-  PlusCircle
+  PlusCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -18,6 +20,7 @@ import { usePetDetails } from '~/hooks/usePetDetails';
 import { usePetMedicalRecords } from '~/hooks/usePetMedicalRecords';
 import type { GetPetMedicalRecordItemResponse, PetOwner } from '~/types/pet.type';
 import NewMedicalRecordModal from '../../components/MedicalRecordModal/NewMedicalRecordModal';
+import MedicalRecordPrescription from './components/MedicalRecordPrescription';
 
 const PetRecords = () => {
   const [phoneInput, setPhoneInput] = useState('');
@@ -26,6 +29,8 @@ const PetRecords = () => {
   const [ownerData, setOwnerData] = useState<PetOwner | null>(null);
   const [enableSearch, setEnableSearch] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [medicalPageNo, setMedicalPageNo] = useState(1);
+  const [medicalPageSize] = useState(5);
 
   // Search customer by phone
   const { isLoading: isSearching, refetch: searchCustomer } = useCustomerByPhone({
@@ -52,12 +57,18 @@ const PetRecords = () => {
   // Get medical records for selected pet
   const { data: medicalRecordsData, isLoading: isLoadingRecords } = usePetMedicalRecords({
     idThuCung: selectedPetId,
-    pageNo: 1,
-    pageSize: 100,
+    pageNo: medicalPageNo,
+    pageSize: medicalPageSize,
     enabled: !!selectedPetId
   });
 
   const medicalRecords = medicalRecordsData?.items || [];
+  const medicalPagination = {
+    pageNo: medicalRecordsData?.pageNo || 1,
+    pageSize: medicalRecordsData?.pageSize || medicalPageSize,
+    totalPage: medicalRecordsData?.totalPage || 0,
+    totalElements: medicalRecordsData?.totalElements || 0
+  };
 
   const handleSearch = async () => {
     if (!phoneInput.trim()) {
@@ -96,6 +107,7 @@ const PetRecords = () => {
 
   const handlePetChange = (petId: number | null) => {
     setSelectedPetId(petId);
+    setMedicalPageNo(1); // Reset to first page when changing pet
   };
 
   const handleOpenModal = () => {
@@ -332,7 +344,7 @@ const PetRecords = () => {
                                 <div className='mb-2 flex items-center gap-2'>
                                   <Calendar className='h-4 w-4 text-gray-500' />
                                   <p className='text-sm font-semibold text-gray-900'>
-                                    Visit date: {new Date(record.thoiGianKham).toLocaleDateString('en-US')} - {' '}
+                                    Visit date: {new Date(record.thoiGianKham).toLocaleDateString('en-US')} -{' '}
                                     {record.tenBacSi}
                                   </p>
                                 </div>
@@ -350,6 +362,8 @@ const PetRecords = () => {
                                     </p>
                                   )}
                                 </div>
+                                {/* Prescription */}
+                                <MedicalRecordPrescription idHoSo={record.idHoSo} />
                               </div>
                             </div>
                             {/* TODO: Update MedicalDetailModal to handle API data structure */}
@@ -368,6 +382,73 @@ const PetRecords = () => {
                         <p className='mt-2 text-sm text-gray-600'>No medical history available</p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {!isLoadingRecords && medicalRecords.length > 0 && medicalPagination.totalPage > 1 && (
+                  <div className='mt-6 flex items-center justify-between border-t border-gray-200 bg-white pt-4'>
+                    <div className='flex items-center gap-2 text-sm text-gray-700'>
+                      <span>
+                        Showing {(medicalPagination.pageNo - 1) * medicalPagination.pageSize + 1} to{' '}
+                        {Math.min(
+                          medicalPagination.pageNo * medicalPagination.pageSize,
+                          medicalPagination.totalElements
+                        )}{' '}
+                        of {medicalPagination.totalElements} records
+                      </span>
+                    </div>
+
+                    <div className='flex items-center gap-2'>
+                      {/* Previous Button */}
+                      <button
+                        onClick={() => setMedicalPageNo((prev) => Math.max(1, prev - 1))}
+                        disabled={medicalPagination.pageNo === 1}
+                        className='flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white'
+                      >
+                        <ChevronLeft className='h-4 w-4' />
+                        Previous
+                      </button>
+
+                      {/* Page Numbers */}
+                      <div className='flex items-center gap-1'>
+                        {Array.from({ length: medicalPagination.totalPage }, (_, i) => i + 1)
+                          .filter((page) => {
+                            return (
+                              page === 1 ||
+                              page === medicalPagination.totalPage ||
+                              (page >= medicalPagination.pageNo - 1 && page <= medicalPagination.pageNo + 1)
+                            );
+                          })
+                          .map((page, index, array) => (
+                            <div key={page} className='flex items-center'>
+                              {index > 0 && array[index - 1] !== page - 1 && (
+                                <span className='px-2 text-gray-500'>...</span>
+                              )}
+                              <button
+                                onClick={() => setMedicalPageNo(page)}
+                                className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                                  page === medicalPagination.pageNo
+                                    ? 'bg-orange-500 text-white hover:bg-orange-600'
+                                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+
+                      {/* Next Button */}
+                      <button
+                        onClick={() => setMedicalPageNo((prev) => Math.min(medicalPagination.totalPage, prev + 1))}
+                        disabled={medicalPagination.pageNo === medicalPagination.totalPage}
+                        className='flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white'
+                      >
+                        Next
+                        <ChevronRight className='h-4 w-4' />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

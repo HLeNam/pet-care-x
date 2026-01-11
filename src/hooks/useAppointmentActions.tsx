@@ -13,7 +13,7 @@ export const useCustomerAppointmentList = ({ pageNo, pageSize }: UseCustomerAppo
   const { profile } = useAppContext();
 
   const query = useQuery({
-    queryKey: ['customer-appointments', profile?.userId || profile?.userId, pageNo, pageSize],
+    queryKey: ['customer-appointments', profile?.userId, pageNo, pageSize],
     queryFn: () => {
       return appointmentApi.getCustomerAppointments({
         idKhachHang: profile!.userId,

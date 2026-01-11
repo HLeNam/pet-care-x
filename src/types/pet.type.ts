@@ -99,7 +99,7 @@ export type CreatePetParams = {
   gioiTinh: string;
   ngaySinh: string;
   tinhTrangSucKhoe: string;
-  idChu: number;
+  idKhachHang: number;
 };
 
 export type CreatePetResponse = {

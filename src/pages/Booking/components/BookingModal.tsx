@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Calendar, Clock, MapPin, User, Stethoscope } from 'lucide-react';
 import { toast } from 'react-toastify';
 import type { Appointment, BookingForm } from '~/types/booking.type';
 import { BookingFormSchema } from '~/types/booking.type';
-import { useBranchList } from '~/hooks/useBranchList';
-import { useDoctorsAvailable } from '~/hooks/useDoctorsAvailable';
+import { useBranchListInfinite } from '~/hooks/useBranchListInfinite';
+import { useDoctorsAvailableInfinite } from '~/hooks/useDoctorsAvailableInfinite';
 import { useCreateAppointment } from '~/hooks/useCreateAppointment';
 import { useAppContext } from '~/contexts';
 import type { Pet } from '~/types/pet.type';
-import { usePetList } from '~/hooks/usePetManagement';
+import { usePetListInfinite } from '~/hooks/usePetListInfinite';
+import { InfiniteSelect } from '~/components/InfiniteSelect';
+import { DoctorSelect } from '~/components/DoctorSelect';
 
 interface BookingModalProps {
   onClose: () => void;
@@ -23,10 +25,9 @@ interface BookingModalProps {
 
 const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) => {
   const { profile } = useAppContext();
-  const { data: branches = [], isLoading: isLoadingBranches } = useBranchList();
-  const { pets, isLoading: isLoadingPets } = usePetList({ pageNo: 1, pageSize: 100 });
   const createAppointmentMutation = useCreateAppointment();
 
+  // State declarations - must be before hooks that use them
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [formData, setFormData] = useState<Partial<BookingForm>>({
     branch_id: prefilledData?.branchId || 0,
@@ -37,13 +38,59 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof BookingForm, string>>>({});
+  const [branchSearchQuery, setBranchSearchQuery] = useState('');
+  const [petSearchQuery, setPetSearchQuery] = useState('');
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState('');
 
-  // Fetch available doctors using the hook
-  const { data: availableDoctors = [], isLoading: isLoadingDoctors } = useDoctorsAvailable({
+  // Infinite hooks
+  const {
+    data: branchesData,
+    isLoading: isLoadingBranches,
+    isFetchingNextPage: isFetchingNextBranches,
+    hasNextPage: hasNextBranches,
+    fetchNextPage: fetchNextBranches
+  } = useBranchListInfinite({ pageSize: 20 });
+
+  const {
+    data: petsData,
+    isLoading: isLoadingPets,
+    isFetchingNextPage: isFetchingNextPets,
+    hasNextPage: hasNextPets,
+    fetchNextPage: fetchNextPets
+  } = usePetListInfinite({ pageSize: 20 });
+
+  const {
+    data: doctorsData,
+    isLoading: isLoadingDoctors,
+    isFetchingNextPage: isFetchingNextDoctors,
+    hasNextPage: hasNextDoctors,
+    fetchNextPage: fetchNextDoctors
+  } = useDoctorsAvailableInfinite({
     branchId: formData.branch_id || null,
     date: formData.booking_date || '',
-    time: formData.booking_time || ''
+    time: formData.booking_time || '',
+    pageSize: 20
   });
+
+  // Flatten data from pages
+  const branches = useMemo(() => {
+    if (!branchesData?.pages) return [];
+    return branchesData.pages.flatMap((page) => page.items);
+  }, [branchesData]);
+
+  const pets = useMemo(() => {
+    if (!petsData?.pages) return [];
+    return petsData.pages.flatMap((page) => page.items);
+  }, [petsData]);
+
+  const availableDoctors = useMemo(() => {
+    if (!doctorsData?.pages) return [];
+    return doctorsData.pages.flatMap((page) => page.items);
+  }, [doctorsData]);
+
+  const totalBranches = branchesData?.pages[0]?.totalItems || 0;
+  const totalPets = petsData?.pages[0]?.totalItems || 0;
+  const totalDoctors = doctorsData?.pages[0]?.totalItems || 0;
 
   // Update form when prefilled data changes
   useEffect(() => {
@@ -204,21 +251,27 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 <MapPin className='h-4 w-4 text-orange-500' />
                 Branch <span className='text-red-500'>*</span>
               </label>
-              <select
-                value={formData.branch_id || ''}
-                onChange={(e) => handleInputChange('branch_id', Number(e.target.value))}
+              <InfiniteSelect
+                value={formData.branch_id ? String(formData.branch_id) : ''}
+                onChange={(value) => handleInputChange('branch_id', Number(value))}
+                items={branches.map((branch) => ({
+                  id: branch.branch_id,
+                  label: branch.name,
+                  subLabel: branch.branch_code
+                }))}
+                isLoading={isLoadingBranches}
+                isFetchingNextPage={isFetchingNextBranches}
+                hasNextPage={hasNextBranches ?? false}
+                onLoadMore={() => fetchNextBranches()}
                 disabled={isLoadingBranches}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                  errors.branch_id ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Select Branch'}</option>
-                {branches.map((branch) => (
-                  <option key={branch.branch_id} value={branch.branch_id}>
-                    {branch.name} - {branch.address}
-                  </option>
-                ))}
-              </select>
+                placeholder='Select Branch'
+                totalCount={totalBranches}
+                searchQuery={branchSearchQuery}
+                onSearchChange={setBranchSearchQuery}
+                emptyMessage='No branches available'
+                loadingMessage='Loading branches...'
+                getSearchText={(item) => item.label}
+              />
               {errors.branch_id && <p className='mt-1 text-sm text-red-500'>{errors.branch_id}</p>}
             </div>
 
@@ -228,21 +281,27 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 <User className='h-4 w-4 text-orange-500' />
                 Pet <span className='text-red-500'>*</span>
               </label>
-              <select
-                value={formData.pet_id || ''}
-                onChange={(e) => handleInputChange('pet_id', Number(e.target.value))}
+              <InfiniteSelect
+                value={formData.pet_id ? String(formData.pet_id) : ''}
+                onChange={(value) => handleInputChange('pet_id', Number(value))}
+                items={pets.map((pet) => ({
+                  id: pet.pet_id,
+                  label: pet.name,
+                  subLabel: pet.pet_code
+                }))}
+                isLoading={isLoadingPets}
+                isFetchingNextPage={isFetchingNextPets}
+                hasNextPage={hasNextPets ?? false}
+                onLoadMore={() => fetchNextPets()}
                 disabled={isLoadingPets}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                  errors.pet_id ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select Pet'}</option>
-                {pets.map((pet: Pet) => (
-                  <option key={pet.pet_id} value={pet.pet_id}>
-                    {pet.name} - {pet.pet_code}
-                  </option>
-                ))}
-              </select>
+                placeholder='Select Pet'
+                totalCount={totalPets}
+                searchQuery={petSearchQuery}
+                onSearchChange={setPetSearchQuery}
+                emptyMessage='No pets available'
+                loadingMessage='Loading pets...'
+                getSearchText={(item) => item.label}
+              />
               {errors.pet_id && <p className='mt-1 text-sm text-red-500'>{errors.pet_id}</p>}
             </div>
 
@@ -297,33 +356,32 @@ const BookingModal = ({ onClose, onSuccess, prefilledData }: BookingModalProps) 
                 <Stethoscope className='h-4 w-4 text-orange-500' />
                 Doctor <span className='text-red-500'>*</span>
               </label>
-              <select
-                value={formData.doctor_id || ''}
-                onChange={(e) => handleInputChange('doctor_id', Number(e.target.value))}
-                disabled={isLoadingDoctors || availableDoctors.length === 0}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                  errors.doctor_id ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value=''>
-                  {isLoadingDoctors
-                    ? 'Loading doctors...'
-                    : availableDoctors.length === 0
-                      ? 'Please select branch, date and time first'
-                      : 'Select Doctor'}
-                </option>
-                {availableDoctors.map((doctor) => (
-                  <option key={doctor.employee_id} value={doctor.employee_id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </select>
+              <DoctorSelect
+                value={formData.doctor_id ? String(formData.doctor_id) : ''}
+                onChange={(value) => handleInputChange('doctor_id', Number(value))}
+                doctors={availableDoctors}
+                isLoading={isLoadingDoctors}
+                isFetchingNextPage={isFetchingNextDoctors}
+                hasNextPage={hasNextDoctors ?? false}
+                onLoadMore={() => fetchNextDoctors()}
+                disabled={!formData.branch_id || !formData.booking_date || !formData.booking_time}
+                totalCount={totalDoctors}
+                searchQuery={doctorSearchQuery}
+                onSearchChange={setDoctorSearchQuery}
+              />
               {errors.doctor_id && <p className='mt-1 text-sm text-red-500'>{errors.doctor_id}</p>}
-              {availableDoctors.length > 0 && (
+              {!isLoadingDoctors && availableDoctors.length > 0 && (
                 <p className='mt-1 text-sm text-green-600'>
-                  {availableDoctors.length} doctors are available for the selected time
+                  {totalDoctors} doctors are available for the selected time
                 </p>
               )}
+              {!isLoadingDoctors &&
+                formData.branch_id &&
+                formData.booking_date &&
+                formData.booking_time &&
+                availableDoctors.length === 0 && (
+                  <p className='mt-1 text-sm text-red-600'>No doctors available at this time</p>
+                )}
             </div>
           </div>
 

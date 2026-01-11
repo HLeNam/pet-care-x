@@ -45,15 +45,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {/* Product Image */}
         <div className='p-2'>
           <div className='relative aspect-square overflow-hidden rounded-lg bg-orange-50'>
-            <img
-              src={product.image}
-              alt={product.name}
-              className='h-full w-full object-cover transition-transform duration-300'
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'https://placehold.co/400x400?text=No+Image';
-              }}
-            />
+            {product.image ? (
+              <img
+                src={product.image}
+                alt={product.name}
+                className='h-full w-full object-cover transition-transform duration-300'
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://placehold.co/400x400?text=No+Image';
+                }}
+              />
+            ) : (
+              <img
+                src={'https://placehold.co/400x400?text=No+Image'}
+                alt={product.name}
+                className='h-full w-full object-cover transition-transform duration-300'
+              />
+            )}
             {/* Badge for category */}
             <div className='absolute top-3 left-3'>
               <span className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryColors[product.category]}`}>

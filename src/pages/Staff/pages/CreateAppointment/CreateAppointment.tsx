@@ -1,16 +1,32 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useBranchList } from '~/hooks/useBranchList';
-import { useDoctorsAvailable } from '~/hooks/useDoctorsAvailable';
+import { useBranchListInfinite } from '~/hooks/useBranchListInfinite';
+import { useDoctorsAvailableInfinite } from '~/hooks/useDoctorsAvailableInfinite';
 import { useCustomerByPhone } from '~/hooks/useCustomerByPhone';
-import { usePetsByOwner } from '~/hooks/usePetsByOwner';
+import { usePetsByOwnerInfinite } from '~/hooks/usePetsByOwnerInfinite';
 import { useCreateAppointment } from '~/hooks/useCreateAppointment';
+import { DoctorSelect } from '~/components/DoctorSelect';
+import { InfiniteSelect } from '~/components/InfiniteSelect';
 import type { GetCustomerByPhoneResponse } from '~/types/customer.type';
 
 const CreateAppointment = () => {
-  // Fetch danh sách chi nhánh từ API
-  const { data: branches = [], isLoading: isLoadingBranches } = useBranchList();
+  // Fetch danh sách chi nhánh từ API với infinite scroll
+  const {
+    data: branchesData,
+    isLoading: isLoadingBranches,
+    isFetchingNextPage: isFetchingNextBranches,
+    hasNextPage: hasNextBranches,
+    fetchNextPage: fetchNextBranches
+  } = useBranchListInfinite({ pageSize: 20 });
+
+  // Flatten tất cả branches từ các pages
+  const branches = useMemo(() => {
+    if (!branchesData?.pages) return [];
+    return branchesData.pages.flatMap((page) => page.items);
+  }, [branchesData]);
+
+  const totalBranches = branchesData?.pages[0]?.totalItems || 0;
 
   const [formData, setFormData] = useState({
     branchId: '',
@@ -22,6 +38,9 @@ const CreateAppointment = () => {
   });
   const [customerInfo, setCustomerInfo] = useState<GetCustomerByPhoneResponse | null>(null);
   const [enableSearch, setEnableSearch] = useState(false);
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState('');
+  const [branchSearchQuery, setBranchSearchQuery] = useState('');
+  const [petSearchQuery, setPetSearchQuery] = useState('');
 
   // React Query hook để search khách hàng theo số điện thoại
   const {
@@ -33,18 +52,49 @@ const CreateAppointment = () => {
     enabled: enableSearch
   });
 
-  // React Query hook để lấy danh sách thú cưng theo owner ID
-  const { data: availablePets = [], isLoading: isLoadingPets } = usePetsByOwner({
+  // React Query hook để lấy danh sách thú cưng theo owner ID với infinite scroll
+  const {
+    data: petsData,
+    isLoading: isLoadingPets,
+    isFetchingNextPage: isFetchingNextPets,
+    hasNextPage: hasNextPets,
+    fetchNextPage: fetchNextPets
+  } = usePetsByOwnerInfinite({
     idKhachHang: customerInfo?.idKhachHang || null,
-    enabled: !!customerInfo
+    enabled: !!customerInfo,
+    pageSize: 20
   });
 
-  // Fetch danh sách bác sĩ rảnh từ API
-  const { data: availableDoctors = [], isLoading: isLoadingDoctors } = useDoctorsAvailable({
+  // Flatten tất cả pets từ các pages
+  const availablePets = useMemo(() => {
+    if (!petsData?.pages) return [];
+    return petsData.pages.flatMap((page) => page.items);
+  }, [petsData]);
+
+  const totalPets = petsData?.pages[0]?.totalItems || 0;
+
+  // Fetch danh sách bác sĩ rảnh từ API với infinite scroll
+  const {
+    data: doctorsData,
+    isLoading: isLoadingDoctors,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useDoctorsAvailableInfinite({
     branchId: formData.branchId ? Number(formData.branchId) : null,
     date: formData.date,
-    time: formData.time
+    time: formData.time,
+    pageSize: 20
   });
+
+  // Flatten tất cả doctors từ các pages
+  const availableDoctors = useMemo(() => {
+    if (!doctorsData?.pages) return [];
+    return doctorsData.pages.flatMap((page) => page.items);
+  }, [doctorsData]);
+
+  // Tổng số doctors
+  const totalDoctors = doctorsData?.pages[0]?.totalItems || 0;
 
   // Mutation hook để tạo lịch hẹn
   const createAppointmentMutation = useCreateAppointment();
@@ -146,6 +196,9 @@ const CreateAppointment = () => {
       doctorId: ''
     });
     setCustomerInfo(null);
+    setDoctorSearchQuery('');
+    setBranchSearchQuery('');
+    setPetSearchQuery('');
   };
 
   return (
@@ -163,20 +216,27 @@ const CreateAppointment = () => {
             <label htmlFor='branch' className='mb-2 block text-sm font-medium text-gray-700'>
               Branch <span className='text-red-500'>*</span>
             </label>
-            <select
-              id='branch'
+            <InfiniteSelect
               value={formData.branchId}
-              onChange={(e) => setFormData({ ...formData, branchId: e.target.value, doctorId: '' })}
+              onChange={(value) => setFormData({ ...formData, branchId: value, doctorId: '' })}
+              items={branches.map((branch) => ({
+                id: branch.branch_id,
+                label: branch.name,
+                subLabel: branch.branch_code
+              }))}
+              isLoading={isLoadingBranches}
+              isFetchingNextPage={isFetchingNextBranches}
+              hasNextPage={hasNextBranches ?? false}
+              onLoadMore={() => fetchNextBranches()}
               disabled={isLoadingBranches}
-              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Select branch'}</option>
-              {branches.map((branch) => (
-                <option key={branch.branch_id} value={branch.branch_id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
+              placeholder='Select branch'
+              totalCount={totalBranches}
+              searchQuery={branchSearchQuery}
+              onSearchChange={setBranchSearchQuery}
+              emptyMessage='No branches available'
+              loadingMessage='Loading branches...'
+              getSearchText={(item) => item.label}
+            />
           </div>
 
           {/* Ngày khám và Giờ khám */}
@@ -248,23 +308,30 @@ const CreateAppointment = () => {
             <label htmlFor='pet' className='mb-2 block text-sm font-medium text-gray-700'>
               Select Pet <span className='text-red-500'>*</span>
             </label>
-            <select
-              id='pet'
+            <InfiniteSelect
               value={formData.petId}
-              onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
+              onChange={(value) => setFormData({ ...formData, petId: value })}
+              items={availablePets.map((pet) => ({
+                id: pet.pet_id,
+                label: pet.name,
+                subLabel: pet.pet_code
+              }))}
+              isLoading={isLoadingPets}
+              isFetchingNextPage={isFetchingNextPets}
+              hasNextPage={hasNextPets ?? false}
+              onLoadMore={() => fetchNextPets()}
               disabled={!customerInfo || isLoadingPets}
-              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>{isLoadingPets ? 'Loading pets...' : 'Select pet'}</option>
-              {availablePets.map((pet) => (
-                <option key={pet.pet_id} value={pet.pet_id}>
-                  {pet.name} ({pet.pet_code})
-                </option>
-              ))}
-            </select>
+              placeholder='Select pet'
+              totalCount={totalPets}
+              searchQuery={petSearchQuery}
+              onSearchChange={setPetSearchQuery}
+              emptyMessage='No pets available'
+              loadingMessage='Loading pets...'
+              getSearchText={(item) => item.label}
+            />
             {isLoadingPets && <p className='mt-2 text-sm text-gray-500'>Loading pets...</p>}
             {!isLoadingPets && customerInfo && availablePets.length > 0 && (
-              <p className='mt-2 text-sm text-green-600'>Customer has {availablePets.length} pet(s)</p>
+              <p className='mt-2 text-sm text-green-600'>Customer has {totalPets} pet(s)</p>
             )}
             {!isLoadingPets && customerInfo && availablePets.length === 0 && (
               <p className='mt-2 text-sm text-red-600'>Customer has no pets yet</p>
@@ -276,23 +343,22 @@ const CreateAppointment = () => {
             <label htmlFor='doctor' className='mb-2 block text-sm font-medium text-gray-700'>
               Select Doctor <span className='text-red-500'>*</span>
             </label>
-            <select
-              id='doctor'
+            <DoctorSelect
               value={formData.doctorId}
-              onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
-              disabled={isLoadingDoctors || availableDoctors.length === 0}
-              className='w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>Select doctor</option>
-              {availableDoctors.map((doctor) => (
-                <option key={doctor.employee_id} value={doctor.employee_id}>
-                  {doctor.name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setFormData({ ...formData, doctorId: value })}
+              doctors={availableDoctors}
+              isLoading={isLoadingDoctors}
+              isFetchingNextPage={isFetchingNextPage}
+              hasNextPage={hasNextPage ?? false}
+              onLoadMore={() => fetchNextPage()}
+              disabled={!formData.branchId || !formData.date || !formData.time}
+              totalCount={totalDoctors}
+              searchQuery={doctorSearchQuery}
+              onSearchChange={setDoctorSearchQuery}
+            />
             {isLoadingDoctors && <p className='mt-2 text-sm text-gray-500'>Loading doctors list...</p>}
             {!isLoadingDoctors && availableDoctors.length > 0 && (
-              <p className='mt-2 text-sm text-green-600'>{availableDoctors.length} doctors available at this time</p>
+              <p className='mt-2 text-sm text-green-600'>{totalDoctors} doctors available at this time</p>
             )}
             {!isLoadingDoctors &&
               formData.branchId &&

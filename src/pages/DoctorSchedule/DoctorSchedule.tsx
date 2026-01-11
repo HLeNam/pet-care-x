@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, User, MapPin, Search, ChevronRight } from 'lucide-react';
 import BookingModal from '../Booking/components/BookingModal';
-import { useBranchList } from '~/hooks/useBranchList';
-import { useDoctorsByBranch } from '~/hooks/useDoctorsByBranch';
+import { useBranchListInfinite } from '~/hooks/useBranchListInfinite';
+import { useDoctorsByBranchInfinite } from '~/hooks/useDoctorsByBranchInfinite';
 import { useDoctorSchedule } from '~/hooks/useDoctorSchedule';
+import { InfiniteSelect } from '~/components/InfiniteSelect';
 
 interface TimeSlot {
   startTime: string;
@@ -17,14 +18,10 @@ interface DaySchedule {
 }
 
 const DoctorSchedule = () => {
-  const { data: branches = [], isLoading: isLoadingBranches } = useBranchList();
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
-  const { data: doctors = [], isLoading: isLoadingDoctors } = useDoctorsByBranch(selectedBranch);
   const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
-  const { data: scheduleData = [], isLoading: isLoadingSchedule } = useDoctorSchedule({
-    doctorId: selectedDoctor,
-    branchId: selectedBranch
-  });
+  const [branchSearchQuery, setBranchSearchQuery] = useState('');
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState('');
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [quickBookingData, setQuickBookingData] = useState<{
     branchId: number;
@@ -32,6 +29,42 @@ const DoctorSchedule = () => {
     date?: string;
     time?: string;
   } | null>(null);
+
+  // Infinite hooks
+  const {
+    data: branchesData,
+    isLoading: isLoadingBranches,
+    isFetchingNextPage: isFetchingNextBranches,
+    hasNextPage: hasNextBranches,
+    fetchNextPage: fetchNextBranches
+  } = useBranchListInfinite({ pageSize: 20 });
+
+  const {
+    data: doctorsData,
+    isLoading: isLoadingDoctors,
+    isFetchingNextPage: isFetchingNextDoctors,
+    hasNextPage: hasNextDoctors,
+    fetchNextPage: fetchNextDoctors
+  } = useDoctorsByBranchInfinite(selectedBranch, 20);
+
+  const { data: scheduleData = [], isLoading: isLoadingSchedule } = useDoctorSchedule({
+    doctorId: selectedDoctor,
+    branchId: selectedBranch
+  });
+
+  // Flatten data from pages
+  const branches = useMemo(() => {
+    if (!branchesData?.pages) return [];
+    return branchesData.pages.flatMap((page) => page.items);
+  }, [branchesData]);
+
+  const doctors = useMemo(() => {
+    if (!doctorsData?.pages) return [];
+    return doctorsData.pages.flatMap((page) => page.items);
+  }, [doctorsData]);
+
+  const totalBranches = branchesData?.pages[0]?.totalItems || 0;
+  const totalDoctors = doctorsData?.pages[0]?.totalItems || 0;
 
   // Reset selected doctor when branch changes
   useEffect(() => {
@@ -102,19 +135,27 @@ const DoctorSchedule = () => {
               <MapPin className='h-5 w-5 text-orange-500' />
               Select Branch
             </label>
-            <select
-              value={selectedBranch || ''}
-              onChange={(e) => setSelectedBranch(Number(e.target.value))}
+            <InfiniteSelect
+              value={selectedBranch ? String(selectedBranch) : ''}
+              onChange={(value) => setSelectedBranch(Number(value))}
+              items={branches.map((branch) => ({
+                id: branch.branch_id,
+                label: branch.name,
+                subLabel: branch.branch_code
+              }))}
+              isLoading={isLoadingBranches}
+              isFetchingNextPage={isFetchingNextBranches}
+              hasNextPage={hasNextBranches ?? false}
+              onLoadMore={() => fetchNextBranches()}
               disabled={isLoadingBranches}
-              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>{isLoadingBranches ? 'Loading branches...' : 'Choose a branch...'}</option>
-              {branches.map((branch) => (
-                <option key={branch.branch_id} value={branch.branch_id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
+              placeholder='Choose a branch...'
+              totalCount={totalBranches}
+              searchQuery={branchSearchQuery}
+              onSearchChange={setBranchSearchQuery}
+              emptyMessage='No branches available'
+              loadingMessage='Loading branches...'
+              getSearchText={(item) => item.label}
+            />
             {selectedBranchData && (
               <div className='mt-3 text-sm text-gray-600'>
                 {selectedBranchData.address && <p>📍 {selectedBranchData.address}</p>}
@@ -131,25 +172,33 @@ const DoctorSchedule = () => {
               <User className='h-5 w-5 text-orange-500' />
               Select Doctor
             </label>
-            <select
-              value={selectedDoctor || ''}
-              onChange={(e) => setSelectedDoctor(Number(e.target.value))}
+            <InfiniteSelect
+              value={selectedDoctor ? String(selectedDoctor) : ''}
+              onChange={(value) => setSelectedDoctor(Number(value))}
+              items={doctors.map((doctor) => ({
+                id: doctor.employee_id,
+                label: doctor.name,
+                subLabel: doctor.employee_code
+              }))}
+              isLoading={isLoadingDoctors}
+              isFetchingNextPage={isFetchingNextDoctors}
+              hasNextPage={hasNextDoctors ?? false}
+              onLoadMore={() => fetchNextDoctors()}
               disabled={!selectedBranch || isLoadingDoctors}
-              className='w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100'
-            >
-              <option value=''>
-                {isLoadingDoctors
+              placeholder={
+                isLoadingDoctors
                   ? 'Loading doctors...'
                   : !selectedBranch
                     ? 'Select a branch first'
-                    : 'Choose a doctor...'}
-              </option>
-              {doctors.map((doctor) => (
-                <option key={doctor.employee_id} value={doctor.employee_id}>
-                  {doctor.name}
-                </option>
-              ))}
-            </select>
+                    : 'Choose a doctor...'
+              }
+              totalCount={totalDoctors}
+              searchQuery={doctorSearchQuery}
+              onSearchChange={setDoctorSearchQuery}
+              emptyMessage='No doctors available'
+              loadingMessage='Loading doctors...'
+              getSearchText={(item) => item.label}
+            />
             {selectedDoctorData && (
               <div className='mt-3 text-sm text-gray-600'>
                 <p>{selectedDoctorData.name}</p>
@@ -223,8 +272,9 @@ const DoctorSchedule = () => {
                   {day.slots.map((slot, slotIndex) => (
                     <div
                       key={slotIndex}
-                      className={`group relative rounded-lg border-2 p-3 transition-all ${getStatusColor(slot.available)} ${slot.available ? 'cursor-pointer hover:border-orange-500 hover:shadow-md' : 'cursor-not-allowed'
-                        }`}
+                      className={`group relative rounded-lg border-2 p-3 transition-all ${getStatusColor(slot.available)} ${
+                        slot.available ? 'cursor-pointer hover:border-orange-500 hover:shadow-md' : 'cursor-not-allowed'
+                      }`}
                       onClick={() => {
                         if (slot.available) {
                           handleQuickBooking(day.date, slot.startTime);

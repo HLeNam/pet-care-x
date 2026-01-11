@@ -15,7 +15,7 @@ const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) =
     isOpen && !!record
   );
 
-  const prescription = prescriptionData?.data?.data;
+  const prescription = prescriptionData?.data?.data?.items?.[0];
 
   if (!isOpen || !record) return null;
 
@@ -141,9 +141,7 @@ const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) =
                 <div className='mt-3 flex justify-between border-t border-blue-200 pt-3'>
                   <span className='font-semibold text-gray-800'>Total Amount:</span>
                   <span className='text-lg font-bold text-blue-600'>
-                    {prescription.toaSanPhamList
-                      .reduce((sum, item) => sum + item.thanhTien, 0)
-                      .toLocaleString('vi-VN')}
+                    {prescription.toaSanPhamList.reduce((sum, item) => sum + item.thanhTien, 0).toLocaleString('vi-VN')}
                     đ
                   </span>
                 </div>

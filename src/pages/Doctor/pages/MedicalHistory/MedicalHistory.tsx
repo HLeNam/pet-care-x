@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import MedicalDetailModal from '~/pages/User/pages/Profile/MedicalHistory/components/MedicalDetailModal';
 import type { MedicalRecord } from '~/types/medical.type';
-import { useDoctorMedicalRecord } from '~/hooks/useMedicalRecord';
+import { useDoctorMedicalList } from '~/hooks/useMedicalRecord';
 import { useAppContext } from '~/contexts';
 
 const MedicalHistory = () => {
@@ -14,7 +14,7 @@ const MedicalHistory = () => {
   const [pageSize, setPageSize] = useState(10);
 
   // Fetch medical records from API - hook handles all parsing
-  const { medicalRecords, pagination, isLoading, isError, error } = useDoctorMedicalRecord({
+  const { medicalRecords, pagination, isLoading, isError, error } = useDoctorMedicalList({
     userId: profile?.userId || 1,
     pageNo,
     pageSize

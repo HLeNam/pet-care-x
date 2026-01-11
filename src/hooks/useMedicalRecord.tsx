@@ -13,7 +13,7 @@ interface UseMedicalRecordParams {
  * Hook để lấy danh sách medical records của bác sĩ
  * Tự động parse và transform data sang MedicalRecord type
  */
-export const useDoctorMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: UseMedicalRecordParams = {}) => {
+export const useDoctorMedicalList = ({ userId, pageNo = 1, pageSize = 10 }: UseMedicalRecordParams = {}) => {
   const { profile } = useAppContext();
 
   const query = useQuery({
@@ -55,7 +55,7 @@ export const useDoctorMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: Us
   };
 };
 
-export const useCustomerMedicalRecord = ({ userId, pageNo = 1, pageSize = 10 }: UseMedicalRecordParams = {}) => {
+export const useCustomerMedicalList = ({ userId, pageNo = 1, pageSize = 10 }: UseMedicalRecordParams = {}) => {
   const { profile } = useAppContext();
 
   const query = useQuery({

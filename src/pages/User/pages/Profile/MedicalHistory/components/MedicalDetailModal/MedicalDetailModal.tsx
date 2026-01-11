@@ -1,5 +1,6 @@
-import { AlertCircle, Calendar, Clock, DollarSign, Stethoscope, User, X } from 'lucide-react';
+import { AlertCircle, Calendar, Clock, DollarSign, Stethoscope, User, X, Pill, Loader2 } from 'lucide-react';
 import type { MedicalRecord } from '~/types/medical.type';
+import { usePrescriptionByMedicalRecord } from '~/hooks/usePrescriptions';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,6 +9,14 @@ interface ModalProps {
 }
 
 const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) => {
+  // Fetch prescription for this medical record
+  const { data: prescriptionData, isLoading: isPrescriptionLoading } = usePrescriptionByMedicalRecord(
+    record?.id || null,
+    isOpen && !!record
+  );
+
+  const prescription = prescriptionData?.data?.data;
+
   if (!isOpen || !record) return null;
 
   return (
@@ -93,7 +102,56 @@ const MedicalDetailModal: React.FC<ModalProps> = ({ isOpen, onClose, record }) =
             <p className='ml-6 text-gray-700'>{record.treatment}</p>
           </div> */}
 
-          {/* Prescriptions */}
+          {/* Prescriptions from API */}
+          {isPrescriptionLoading ? (
+            <div className='rounded-lg bg-blue-50 p-4'>
+              <div className='flex items-center justify-center gap-2'>
+                <Loader2 className='h-5 w-5 animate-spin text-blue-600' />
+                <span className='text-sm text-gray-600'>Loading prescription...</span>
+              </div>
+            </div>
+          ) : prescription && prescription.toaSanPhamList && prescription.toaSanPhamList.length > 0 ? (
+            <div className='rounded-lg bg-blue-50 p-4'>
+              <div className='mb-4 flex items-center gap-2'>
+                <Pill className='h-5 w-5 text-blue-600' />
+                <h3 className='font-semibold text-gray-800'>Prescription</h3>
+                <span className='ml-auto text-xs text-gray-600'>Code: {prescription.maToa}</span>
+              </div>
+              <div className='space-y-2'>
+                {prescription.toaSanPhamList.map((medicine, index) => (
+                  <div key={medicine.idSanPham} className='rounded-lg border border-blue-200 bg-white p-3'>
+                    <div className='flex items-start justify-between'>
+                      <div className='flex gap-3'>
+                        <span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700'>
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className='font-medium text-gray-900'>{medicine.tenSanPham}</p>
+                          <p className='mt-1 text-sm text-gray-600'>
+                            Quantity: {medicine.soLuong} • Unit price: {medicine.donGia.toLocaleString('vi-VN')}đ
+                          </p>
+                        </div>
+                      </div>
+                      <div className='text-right'>
+                        <p className='font-semibold text-blue-600'>{medicine.thanhTien.toLocaleString('vi-VN')}đ</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className='mt-3 flex justify-between border-t border-blue-200 pt-3'>
+                  <span className='font-semibold text-gray-800'>Total Amount:</span>
+                  <span className='text-lg font-bold text-blue-600'>
+                    {prescription.toaSanPhamList
+                      .reduce((sum, item) => sum + item.thanhTien, 0)
+                      .toLocaleString('vi-VN')}
+                    đ
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Old Prescriptions fallback */}
           {record.prescriptions && record.prescriptions.length > 0 && (
             <div>
               <h3 className='mb-3 font-semibold text-gray-800'>Prescriptions</h3>

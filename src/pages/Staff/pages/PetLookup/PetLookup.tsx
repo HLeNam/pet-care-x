@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, FileText, User, Phone, Calendar, X } from 'lucide-react';
+import { Search, FileText, User, Phone, Calendar, X, Package } from 'lucide-react';
 import { useCustomerByPhone } from '~/hooks/useCustomerByPhone';
 import { usePetsByOwnerInfinite } from '~/hooks/usePetsByOwnerInfinite';
 import { usePetDetails } from '~/hooks/usePetDetails';
 import { usePetMedicalRecords } from '~/hooks/usePetMedicalRecords';
+import { usePrescriptionsByMedicalRecordId } from '~/hooks/usePrescriptions';
 import useQueryParams from '~/hooks/useQueryParams';
 import { Pagination } from '~/pages/User/components/Pagination';
 import { InfiniteSelect } from '~/components/InfiniteSelect';
@@ -24,11 +25,13 @@ const PetLookup = () => {
   const [enableSearch, setEnableSearch] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<number | null>(null);
   const [petSearchQuery, setPetSearchQuery] = useState('');
+  const [prescriptionPage, setPrescriptionPage] = useState(1);
 
   // Query params for pagination
   const { getParam, updateParams } = useQueryParams();
   const currentPage = Number(getParam('page', '1'));
   const pageSize = 5; // Records per page
+  const prescriptionPageSize = 5; // Prescriptions per page
 
   // React Query hook to search customer by phone
   const {
@@ -79,6 +82,22 @@ const PetLookup = () => {
   const totalPages = medicalRecordsData?.totalPage || 0;
   const totalElements = medicalRecordsData?.totalElements || 0;
 
+  // React Query hook to get prescriptions for selected medical record
+  const { data: prescriptionsData, isLoading: isLoadingPrescriptions } = usePrescriptionsByMedicalRecordId(
+    {
+      idHoSo: selectedRecord,
+      pageNo: prescriptionPage - 1, // API uses 0-indexed pagination
+      pageSize: prescriptionPageSize,
+      sortBy: 'thoiGianKham',
+      sortDir: 'desc'
+    },
+    !!selectedRecord
+  );
+
+  const prescriptions = prescriptionsData?.data?.data?.items || [];
+  const prescriptionsTotalPages = prescriptionsData?.data?.data?.totalPage || 0;
+  const prescriptionsTotalElements = prescriptionsData?.data?.data?.totalElements || 0;
+
   const selectedPetData = filteredPets.find((p) => p.pet_id === selectedPet);
   const petDetails = petDetailsData?.data?.data;
   const selectedRecordData = petMedicalRecords.find((r) => r.idHoSo === selectedRecord);
@@ -89,6 +108,13 @@ const PetLookup = () => {
       updateParams({ page: null }); // Remove page param for page 1
     }
   }, [selectedPet, updateParams]);
+
+  // Reset prescription page when modal is closed
+  useEffect(() => {
+    if (!selectedRecord) {
+      setPrescriptionPage(1);
+    }
+  }, [selectedRecord]);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -433,7 +459,114 @@ const PetLookup = () => {
                 )}
               </div>
 
-              {/* Note: Prescription data will be added when API is available */}
+              {/* Prescriptions */}
+              <div className='mb-6'>
+                <h3 className='mb-3 font-semibold text-gray-900'>Prescriptions</h3>
+                {isLoadingPrescriptions ? (
+                  <div className='rounded-lg border border-gray-200 bg-gray-50 p-8 text-center'>
+                    <p className='text-sm text-gray-500'>Loading prescriptions...</p>
+                  </div>
+                ) : prescriptions.length === 0 ? (
+                  <div className='rounded-lg border border-gray-200 bg-gray-50 p-8 text-center'>
+                    <Package className='mx-auto h-10 w-10 text-gray-400' />
+                    <p className='mt-2 text-sm text-gray-500'>No prescriptions for this medical record</p>
+                  </div>
+                ) : (
+                  <div className='space-y-4'>
+                    {prescriptions.map((prescription) => (
+                      <div key={prescription.idToa} className='rounded-lg border border-gray-200 bg-white p-4'>
+                        <div className='mb-3 flex items-center justify-between border-b border-gray-200 pb-3'>
+                          <div>
+                            <p className='font-semibold text-gray-900'>{prescription.maToa}</p>
+                            <p className='text-sm text-gray-600'>
+                              {new Date(prescription.thoiGianKham).toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            <Package className='h-5 w-5 text-orange-600' />
+                            <span className='text-sm font-medium text-gray-600'>
+                              {prescription.toaSanPhamList.length} item
+                              {prescription.toaSanPhamList.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </div>
+                        <div className='space-y-2'>
+                          {prescription.toaSanPhamList.length > 0 ? (
+                            <>
+                              {/* Table Header */}
+                              <div className='grid grid-cols-12 gap-2 border-b border-gray-200 pb-2 text-xs font-semibold text-gray-700'>
+                                <div className='col-span-5'>Product Name</div>
+                                <div className='col-span-2 text-center'>Quantity</div>
+                                <div className='col-span-2 text-right'>Unit Price</div>
+                                <div className='col-span-3 text-right'>Total</div>
+                              </div>
+                              {/* Table Rows */}
+                              {prescription.toaSanPhamList.map((item) => (
+                                <div key={item.idSanPham} className='grid grid-cols-12 gap-2 py-2 text-sm'>
+                                  <div className='col-span-5 text-gray-900'>{item.tenSanPham}</div>
+                                  <div className='col-span-2 text-center text-gray-600'>{item.soLuong}</div>
+                                  <div className='col-span-2 text-right text-gray-600'>
+                                    {new Intl.NumberFormat('vi-VN', {
+                                      style: 'currency',
+                                      currency: 'VND'
+                                    }).format(item.donGia)}
+                                  </div>
+                                  <div className='col-span-3 text-right font-medium text-gray-900'>
+                                    {new Intl.NumberFormat('vi-VN', {
+                                      style: 'currency',
+                                      currency: 'VND'
+                                    }).format(item.thanhTien)}
+                                  </div>
+                                </div>
+                              ))}
+                              {/* Total */}
+                              <div className='mt-2 border-t border-gray-200 pt-2'>
+                                <div className='flex justify-between'>
+                                  <span className='font-semibold text-gray-900'>Total Amount:</span>
+                                  <span className='font-bold text-orange-600'>
+                                    {new Intl.NumberFormat('vi-VN', {
+                                      style: 'currency',
+                                      currency: 'VND'
+                                    }).format(
+                                      prescription.toaSanPhamList.reduce((sum, item) => sum + item.thanhTien, 0)
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <p className='py-2 text-center text-sm text-gray-500'>No products in this prescription</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Prescription Pagination */}
+                {!isLoadingPrescriptions && prescriptionsTotalPages > 1 && (
+                  <div className='mt-4 flex justify-center'>
+                    <Pagination
+                      currentPage={prescriptionPage}
+                      totalPages={prescriptionsTotalPages}
+                      onPageChange={setPrescriptionPage}
+                    />
+                  </div>
+                )}
+
+                {!isLoadingPrescriptions && prescriptionsTotalElements > 0 && (
+                  <p className='mt-2 text-center text-xs text-gray-500'>
+                    Showing {prescriptions.length} of {prescriptionsTotalElements} prescription
+                    {prescriptionsTotalElements !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Modal Footer - Fixed */}
